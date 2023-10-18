@@ -26,24 +26,32 @@ video {
 
 audio {
   filter: sepia(20%) saturate(70%) grayscale(1) contrast(100%) invert(16%);
-  width: 80%;
-  height: 25px;
+  height: 3vh;
+  width: 40vw;
   animation: rainbow 3s infinite;
   background-color: white;
-  margin-left: 10vh;
+  margin-left: 10vw;
+  margin-top: 1vh;
 }
 
 body{
-  background-color:  #232323;
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
 }
 
 h1{
+  font-size: 3.5vw;
+  padding: 3%;
+  margin-bottom: -7%;
   background-color: #2c2f33;
-  color: white
+  color: white;
 }
 
 
 p{
+  margin-bottom: 4%;
+  font-size: 2vw;
   margin-top: -3%;
   color: white;
 }
@@ -53,6 +61,8 @@ a{
 }
 
 img{
+  width: 40%;
+  height: 40%;
   border-radius: 50%;
   animation: rainbow 3s infinite;
 }
@@ -60,21 +70,17 @@ img{
 .card {
   position: relative;
   font-family: "Trebuchet MS";
-  padding: 10%;
+  padding: 5%;
   background-color: #232323d4;
   animation: rainbow 3s infinite;
-  width: 75%;
-  height: 75%;
+
   box-sizing: border-box;
   margin-left: auto;
   margin-right: auto;
   margin-bottom: 10%;
   margin-top: 10%;
   text-align: center;
-  max-width: 750px;
-
-  min-width: 350px;
-  min-height: 350px;
+  width: 65vw;
 }
 
 .video {
@@ -82,27 +88,28 @@ img{
 }
 
 .title {
-  padding: 5px;
-  margin-top: -6%;
+  padding: 3%;
   color: rgb(228, 199, 230);
-  font-size: 15px;
+  font-size: 2vw;
   margin-bottom: 7%;
 }
 
 .pronouns {
   margin-top: -4%;
   color: rgb(241, 227, 242);
-  font-size: 12px;
+  font-size: 1.4vw;
   margin-bottom: 6%;
 }
 
 .subtext {
-  font-size: 13px;
+  margin-top: -5%;
+  font-size: 1.4vw;
+  color: #eeeeeed4;
 }
 
 .songTitle {
-  font-size: 14px;
+  font-size: 1.5vw;
   text-align: left;
   margin-left: 1vh;
-  margin-top: -3.75vb;
+  margin-top: -3vb;
 }
