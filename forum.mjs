@@ -47,21 +47,29 @@ document.addEventListener('click', function(event) {
 async function fetchForums() {
     const forumsContainer = document.getElementById('forumsList');
     forumsContainer.innerHTML = ''; // Clear existing content
-    const forumsQuery = query(collection(db, "messages"), where("parentId", "==", null), orderBy("createdAt"));
 
     try {
+        const forumsQuery = query(collection(db, "messages"), where("parentId", "==", null), orderBy("createdAt"));
         const querySnapshot = await getDocs(forumsQuery);
+
         querySnapshot.forEach(doc => {
             const message = doc.data();
+            // Assign an ID to each forum post container for later reference
+            const postId = `post-${doc.id}`;
             const messageElement = document.createElement('div');
+            messageElement.setAttribute('id', postId); // Important for associating replies
             messageElement.innerHTML = `
                 <div>
-                    <h3>${message.title}</h3>
+                    <img src="${message.userProfilePic || 'default_avatar.png'}" alt="User profile picture" class="user-pic">
+                    <div class="text-container">
+                    <span>${message.userName.split(' ')[0]}</span> <!-- First name -->
+                    <small>${formatDate(message.createdAt)}</small>
+                    <h2 class="thread-title">${message.title}</h2>
                     <p>${message.content}</p>
-                    <small>Posted by: ${message.userName}</small>
-                    ${auth.currentUser ? `<button class='replyButton' data-postId='${doc.id}'>Reply</button>` : `<p>Please sign in to reply.</p>`}
-                    <div id="replies-${doc.id}"></div>
+                    <p class="line"></p>
+                    </div>
                 </div>
+                <div class="replies" id="replies-${doc.id}"></div> <!-- Container for replies -->
             `;
             forumsContainer.appendChild(messageElement);
 
@@ -72,6 +80,7 @@ async function fetchForums() {
         console.error("Error fetching forums: ", error);
     }
 }
+
 
 async function fetchReplies(parentId, level = 0) {
     const repliesContainerId = `replies-${parentId}`;
@@ -94,8 +103,13 @@ async function fetchReplies(parentId, level = 0) {
             replyElement.classList.add('reply');
             replyElement.style.marginLeft = `${level * 20}px`; // Visually indent replies
             replyElement.innerHTML = `
+            <div class="nestedReply">
+                <img src="${reply.userProfilePic || 'default_avatar.png'}" alt="User profile picture" class="user-pic">
+                <h3 display:inline-block>${reply.userName.split(' ')[0]}</h3>
+                <small>· ${formatDate(reply.createdAt)}</small>
+            </div>
                 <p>${reply.content}</p>
-                <small>Replied by: ${reply.userName}</small>
+
                 ${auth.currentUser ? `<button class='replyButton' data-postId='${doc.id}'>Reply</button>` : ''}
                 <div id="replies-${doc.id}"></div>
             `;
@@ -119,9 +133,11 @@ function displayReplyForm(parentId, level = 0) {
         replyForm.id = replyFormId;
         replyForm.classList.add('replyForm');
         replyForm.innerHTML = `
+        <div>
             <input type="text" class="replyInput" placeholder="Your reply..." required>
             <button type="submit">Submit Reply</button>
-        `;
+        </div>
+            `;
         // Ensure the form submission calls `submitReply` with proper parameters
         replyForm.onsubmit = async (event) => {
             event.preventDefault();
@@ -232,6 +248,34 @@ function signOutUser() {
     });
 }
 
+function formatDate(timestamp) {
+    const date = timestamp.toDate(); // Convert Firestore timestamp to JavaScript Date object
+    const now = new Date();
+    const secondsAgo = Math.round((now - date) / 1000);
+    const minutesAgo = Math.round(secondsAgo / 60);
+    const hoursAgo = Math.round(minutesAgo / 60);
+    const daysAgo = Math.round(hoursAgo / 24);
+    const weeksAgo = Math.round(daysAgo / 7);
+    const monthsAgo = Math.round(daysAgo / 30);
+    const yearsAgo = Math.round(daysAgo / 365);
+
+    if (secondsAgo < 60) {
+        return 'just now';
+    } else if (minutesAgo < 60) {
+        return `${minutesAgo} min ago`;
+    } else if (hoursAgo < 24) {
+        return `${hoursAgo} hours ago`;
+    } else if (daysAgo < 7) {
+        return `${daysAgo} days ago`;
+    } else if (weeksAgo < 5) {
+        return `${weeksAgo} weeks ago`;
+    } else if (monthsAgo < 12) {
+        return `${monthsAgo} months ago`;
+    } else {
+        return `${yearsAgo} years ago`;
+    }
+}
+
 
 
 onAuthStateChanged(auth, (user) => {
@@ -261,8 +305,12 @@ onAuthStateChanged(auth, (user) => {
 
         document.getElementById('createForumForm').style.display = 'none';
     }
-
-    fetchForums();
 });
 
-
+await addDoc(collection(db, "messages"), {
+    content: replyContent,
+    parentId: parentId,
+    userName: auth.currentUser.displayName,
+    userProfilePic: auth.currentUser.photoURL,
+    createdAt: serverTimestamp(), // Ensure this is included when adding a doc
+});
