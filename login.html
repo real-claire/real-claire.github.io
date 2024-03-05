@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js"></script>
-    <script type="module">
-      const firebaseConfig = {
-      apiKey: "AIzaSyCNg0dn4mTW4E489OkRxwvXAzr25qOMS1M",
-      authDomain: "portfolio-forum-cce27.firebaseapp.com",
-      projectId: "portfolio-forum-cce27",
-      storageBucket: "portfolio-forum-cce27.appspot.com",
-      messagingSenderId: "200834829160",
-      appId: "1:200834829160:web:a97c64807874a4aa4c24dd",
-    };
-
-    firebase.initializeApp(firebaseConfig);
-  </script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compact.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compact.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-auth-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+        apiKey: "AIzaSyCNg0dn4mTW4E489OkRxwvXAzr25qOMS1M",
+        authDomain: "portfolio-forum-cce27.firebaseapp.com",
+        projectId: "portfolio-forum-cce27",
+        storageBucket: "portfolio-forum-cce27.appspot.com",
+        messagingSenderId: "200834829160",
+        appId: "1:200834829160:web:a97c64807874a4aa4c24dd",
+      };
+  
+      firebase.initializeApp(firebaseConfig);
+    </script>
 </head>
 <body>
   <h1>Login</h1>
