@@ -1,6 +1,6 @@
-var initializeApp = require('https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js');
-var getFirestore, collection, getDocs, addDoc, doc, updateDoc, arrayUnion, serverTimestamp = require('https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js');
-var getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut = require('https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js');
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
+import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, arrayUnion, serverTimestamp  } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyCNg0dn4mTW4E489OkRxwvXAzr25qOMS1M",
