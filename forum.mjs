@@ -1,5 +1,5 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
-import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
 const firebaseConfig = {
@@ -18,7 +18,8 @@ const auth = getAuth(app);
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Hide the form by default; it will be shown if a user is logged in
-    document.getElementById('createForumForm').style.display = 'none';
+    const forumForm = document.getElementById('createForumForm').style.display = 'none';
+    forumForm.addEventListener('submit', postForum);
 
     // Listen for auth state changes to toggle UI elements based on user status
     onAuthStateChanged(auth, (user) => {
@@ -32,6 +33,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Fetch forums to refresh the UI based on auth state
         fetchForums();
     });
+
+    document.getElementById('authButton').addEventListener('click', signIn);
 });
 
 document.addEventListener('click', function(event) {
@@ -40,6 +43,8 @@ document.addEventListener('click', function(event) {
         displayReplyForm(postId);
     }
 });
+
+
 
 async function fetchForums() {
     const forumsContainer = document.getElementById('forumsList');
@@ -171,23 +176,93 @@ async function submitReply(event, parentId) {
     }
 }
 
-function signIn() {
-    const provider = new GoogleAuthProvider();
-    signInWithPopup(auth, provider).then((result) => {
-        console.log("User signed in");
-        // Optionally refresh or dynamically update the UI post-login
-    }).catch(error => console.error("Error signing in: ", error.message));
+// Example of a postForum function
+async function postForum(event) {
+    event.preventDefault(); // Prevent the form from submitting in the traditional way
+
+    const title = document.getElementById('title').value;
+    const content = document.getElementById('content').value;
+
+    if (!title || !content) {
+        alert("Please fill in all fields.");
+        return;
+    }
+
+    try {
+        await addDoc(collection(db, "messages"), {
+            title,
+            content,
+            userName: auth.currentUser.displayName,
+            userProfilePic: auth.currentUser.photoURL,
+            parentId: null, // Indicating this is a top-level post
+            createdAt: serverTimestamp()
+        });
+        console.log("Thread successfully posted!");
+        document.getElementById('title').value = '';
+        document.getElementById('content').value = '';
+        fetchForums(); // Refresh the list of forums
+    } catch (error) {
+        console.error("Error posting thread: ", error);
+        alert("Failed to post the thread.");
+    }
 }
 
+document.getElementById('createForumForm')?.addEventListener('submit', postForum);
+
+
+// Example signIn function
+function signIn() {
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider)
+        .then((result) => {
+            console.log("User signed in");
+            // Update UI or redirect as necessary
+        })
+        .catch((error) => {
+            console.error("Error signing in: ", error);
+            alert("Failed to sign in.");
+        });
+}
+
+function signOutUser() {
+    signOut(auth).then(() => {
+        console.log("User signed out successfully");
+        // Optionally, redirect the user or provide a notification
+    }).catch((error) => {
+        console.error("Error signing out: ", error);
+        alert("Failed to sign out.");
+    });
+}
+
+
+
 onAuthStateChanged(auth, (user) => {
+    const userInfo = document.getElementById('userInfo');
+    const authButton = document.getElementById('authButton');
+
     if (user) {
+        // Display user info and change button to "Log Out"
+        const userPic = document.getElementById('userPic');
+        const userName = document.getElementById('userName');
+
+        userPic.src = user.photoURL || 'default_avatar.png'; // Use a default avatar if the user doesn't have a photoURL
+        userName.textContent = `Hello, ${user.displayName.split(' ')[0]}`; // Assuming the displayName format is "First Last"
+
+        userInfo.style.display = 'block';
+        authButton.textContent = 'Log Out';
+        authButton.removeEventListener('click', signIn);
+        authButton.addEventListener('click', signOutUser);
+
         document.getElementById('createForumForm').style.display = 'block';
-        [...document.querySelectorAll('.replyButton')].forEach(btn => btn.style.display = 'inline-block');
     } else {
+        // Hide user info and change button to "Sign In"
+        userInfo.style.display = 'none';
+        authButton.textContent = 'Sign In';
+        authButton.removeEventListener('click', signOutUser);
+        authButton.addEventListener('click', signIn);
+
         document.getElementById('createForumForm').style.display = 'none';
-        [...document.querySelectorAll('.replyButton')].forEach(btn => btn.style.display = 'none');
     }
-    // Re-fetch forums to refresh the UI based on auth state
-    fetchForums();
 });
+
 
