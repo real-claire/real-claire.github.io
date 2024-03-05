@@ -9,7 +9,7 @@ const firebaseConfig = {
   
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-var db = firestore();
+var db = firebase.firestore();
 const userUI = document.getElementById("userUI");
 const loginPrompt = document.getElementById("loginPrompt");
 
@@ -21,7 +21,7 @@ document.getElementById("createForumForm").addEventListener("submit", function(e
   db.collection("forums").add({
     title: title,
     description: description,
-    createdAt: FieldValue.serverTimestamp()
+    createdAt: firebase.FieldValue.serverTimestamp()
   })
   .then((docRef) => {
     console.log("Forum created with ID: ", docRef.id);
@@ -35,7 +35,7 @@ document.getElementById("createForumForm").addEventListener("submit", function(e
 document.getElementById("googleLogin").addEventListener("click", function(e) {
     e.preventDefault(); // Prevent default action
     const provider = new firebase.auth.GoogleAuthProvider();
-    auth().signInWithPopup(provider).then(function(result) {
+    firebase.auth().signInWithPopup(provider).then(function(result) {
         // This gives you a Google Access Token. You can use it to access the Google API.
         const token = result.credential.accessToken;
         // The signed-in user info.
@@ -48,7 +48,7 @@ document.getElementById("googleLogin").addEventListener("click", function(e) {
     });
     });
 
-    auth().onAuthStateChanged((user) => {
+    firebase.auth().onAuthStateChanged((user) => {
     if (user) {
         window.location.href = 'forums.html'; // Redirect if already logged in
     }
@@ -66,13 +66,13 @@ function fetchForums() {
     });
 }
 document.getElementById("signOut").addEventListener("click", function() {
-    auth().signOut().then(() => {
+    firebase.auth().signOut().then(() => {
     console.log("User signed out.");
     window.location.reload();
     });
 });
 
-auth().onAuthStateChanged((user) => {
+firebase.auth().onAuthStateChanged((user) => {
     if (user) {
     // User is signed in, show forum creation UI and hide login prompt
     userUI.style.display = "block";
@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Invoke fetchForums if needed here or after user checks to display forums regardless of login state
+    fetchForums();
 });
 
   
