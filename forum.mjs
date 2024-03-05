@@ -77,12 +77,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.postMessage = (event, forumId) => {
+        if (user) {
+            const postData = {
+                title: titleInput.value,
+                description: descriptionInput.value,
+                userName: user.displayName,
+                userProfilePic: user.photoURL,
+                createdAt: serverTimestamp()
+            };
+
         event.preventDefault();
         const messageContent = event.target.querySelector('input').value;
         // Add document to the posts subcollection of the forum
         addDoc(collection(db, "forums", forumId, "posts"), {
             message: messageContent,
-            // Include user info and timestamp
+            user: postData
         }).then(() => {
             fetchPosts(forumId); // Refresh posts
         });
@@ -95,32 +104,59 @@ document.addEventListener('DOMContentLoaded', () => {
         const postsSnapshot = await getDocs(collection(db, "forums", forumId, "posts"));
         postsSnapshot.forEach(postDoc => {
             const post = postDoc.data();
-            // Structure to display each post and its replies
-            const postElement = document.createElement('div');
-            postElement.innerHTML = `
-                <p>${post.message}</p>
-                <div>Posted by: <img src="${post.userProfilePic || 'img.jpg'}" alt="User" style="width:20px;height:20px;border-radius:50%;"> ${post.userName}</div>
-                <button onclick="toggleReplyForm('${postDoc.id}')">Reply</button>
-                <div id="replies_${postDoc.id}"></div> <!-- Placeholder for replies -->
-                <form id="replyForm_${postDoc.id}" style="display:none;" onsubmit="postReply(event, '${forumId}', '${postDoc.id}')">
-                    <input type="text" placeholder="Reply..." required>
-                    <button type="submit">Send Reply</button>
-                </form>
+            let postHtml = `
+                <div>
+                    <p>${post.message}</p>
+                    <div>Posted by: <img src="${post.userProfilePic || 'img.jpg'}" alt="User" style="width:20px;height:20px;border-radius:50%;"> ${post.userName}</div>
+                </div>
             `;
+    
+            if (auth.currentUser) {
+                postHtml += `
+                    <button onclick="toggleReplyForm('${postDoc.id}')">Reply</button>
+                    <div id="replies_${postDoc.id}"></div> <!-- Placeholder for replies -->
+                    <form id="replyForm_${postDoc.id}" class="replyForm" onsubmit="postReply(event, '${forumId}', '${postDoc.id}')">
+                        <input type="text" placeholder="Reply..." required>
+                        <button type="submit">Send Reply</button>
+                    </form>
+                `;
+            } else {
+                postHtml += `<p>Please <a href="#" onclick="signIn()">sign in</a> to reply.</p>`;
+            }
+    
+            // Insert the constructed HTML into the posts list
+            const postElement = document.createElement('div');
+            postElement.innerHTML = postHtml;
             postsList.appendChild(postElement);
     
             // Fetch replies for this post
             fetchReplies(forumId, postDoc.id);
         });
     }
+    
 
     function toggleReplyForm(postId) {
         const replyForm = document.getElementById(`replyForm_${postId}`);
         replyForm.style.display = replyForm.style.display === 'none' ? 'block' : 'none';
     }
     
+    function signIn() {
+        const provider = new GoogleAuthProvider();
+        signInWithPopup(auth, provider).catch(error => {
+            console.error("Error signing in: ", error.message);
+        });
+    }    
 
     async function postForum(event) {
+        if (user) {
+            const postData = {
+                title: titleInput.value,
+                description: descriptionInput.value,
+                userName: user.displayName,
+                userProfilePic: user.photoURL,
+                createdAt: serverTimestamp()
+            };
+
         event.preventDefault(); // Prevent default form submission behavior
         const titleInput = document.getElementById('title');
         const descriptionInput = document.getElementById('description');
@@ -129,8 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
             await addDoc(collection(db, "forums"), {
                 title: titleInput.value,
                 description: descriptionInput.value,
-                // Include additional data here as needed
-                createdAt: serverTimestamp() // Use serverTimestamp for consistency
+                user: postData,
             });
             console.log("Forum successfully created!");
             titleInput.value = ''; // Clear the form fields after submission
@@ -177,6 +212,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     window.postForum = postForum;
-
+    }}
 });
 
+document.addEventListener('click', function(event) {
+    if (event.target.matches('.replyButton')) {
+        const postId = event.target.getAttribute('data-postId');
+        toggleReplyForm(postId); // Make sure this function is correctly implemented
+    }
+});
