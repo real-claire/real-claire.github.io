@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compact.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compact.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-auth-compat.js"></script>
-    <script type="module">
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js">
       const firebaseConfig = {
       apiKey: "AIzaSyCNg0dn4mTW4E489OkRxwvXAzr25qOMS1M",
       authDomain: "portfolio-forum-cce27.firebaseapp.com",
@@ -22,7 +21,7 @@
   <h1>Login</h1>
   <button id="googleLogin">Login with Google</button>
 
-  <script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js">
     document.getElementById("googleLogin").addEventListener("click", function(e) {
       firebase.e.preventDefault(); // Prevent default action
       const provider = new auth.GoogleAuthProvider();

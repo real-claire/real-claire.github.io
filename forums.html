@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Forums</title>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compact.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compact.js"></script>
-    <script type="module">
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js">
         const firebaseConfig = {
         apiKey: "AIzaSyCNg0dn4mTW4E489OkRxwvXAzr25qOMS1M",
         authDomain: "portfolio-forum-cce27.firebaseapp.com",
@@ -29,7 +28,7 @@
     </div>
     <div id="forumsList"></div>
 
-    <script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js">
         const userUI = document.getElementById("userUI");
         const loginPrompt = document.getElementById("loginPrompt");
         var db = firebase.firestore();

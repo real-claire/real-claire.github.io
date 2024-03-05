@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Create Forum</title>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compact.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compact.js"></script>
-    <script type="module">
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js">
       const firebaseConfig = {
       apiKey: "AIzaSyCNg0dn4mTW4E489OkRxwvXAzr25qOMS1M",
       authDomain: "portfolio-forum-cce27.firebaseapp.com",
@@ -14,7 +13,7 @@
       messagingSenderId: "200834829160",
       appId: "1:200834829160:web:a97c64807874a4aa4c24dd",
       };
-      firebase.initializeApp(options, FirebaseOptions(firebaseConfig))
+      firebase.initializeApp(firebaseConfig);    
     </script>
 </head>
 <body>
@@ -25,7 +24,7 @@
         <button type="submit">Create Forum</button>
     </form>
     <a href="forums.html">Back to Forums</a>
-    <script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js">
       var db = firebase.firestore();
 
       document.getElementById("createForumForm").addEventListener("submit", function(e) {
