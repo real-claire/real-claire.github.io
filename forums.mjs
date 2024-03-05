@@ -1,61 +1,60 @@
-    document.addEventListener('DOMContentLoaded', () => {
-    
-    const db = firebase.firestore();
-    const auth = firebase.auth();
-    const googleProvider = new firebase.auth.GoogleAuthProvider();
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
+import { getFirestore, collection, getDocs, addDoc } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
-    const loginSection = document.getElementById('loginSection');
-    const forumsSection = document.getElementById('forumsSection');
-    const createForumSection = document.getElementById('createForumSection');
-    const signOutButton = document.getElementById('signOut');
+const firebaseConfig = {
+    apiKey: "AIzaSyCNg0dn4mTW4E489OkRxwvXAzr25qOMS1M",
+    authDomain: "portfolio-forum-cce27.firebaseapp.com",
+    projectId: "portfolio-forum-cce27",
+    storageBucket: "portfolio-forum-cce27.appspot.com",
+    messagingSenderId: "200834829160",
+    appId: "1:200834829160:web:a97c64807874a4aa4c24dd",
+};
 
-    document.getElementById('googleLogin').addEventListener('click', (e) => {
-        e.preventDefault();
-        auth.signInWithPopup(googleProvider);
-    });
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-    document.getElementById('signOut').addEventListener('click', () => {
-        auth.signOut();
-    });
+document.addEventListener('DOMContentLoaded', () => {
+    const authButton = document.createElement('button');
+    authButton.style.position = 'absolute';
+    authButton.style.top = '20px';
+    authButton.style.right = '20px';
+    document.body.appendChild(authButton);
 
-    auth.onAuthStateChanged(user => {
+    function updateAuthButton(user) {
         if (user) {
-            loginSection.style.display = 'none';
-            forumsSection.style.display = 'block';
-            createForumSection.style.display = 'block';
-            signOutButton.style.display = 'block';
-            fetchForums();
+            authButton.textContent = 'Sign Out';
+            document.getElementById('createForumSection').style.display = 'block';
+            document.getElementById('userInfo').style.display = 'block';
+            document.getElementById('userPic').src = user.photoURL || 'img.jpg'; // Fallback to a default image
+            document.getElementById('userName').textContent = `Hello, ${user.displayName.split(' ')[0]}!`;
         } else {
-            loginSection.style.display = 'block';
-            forumsSection.style.display = 'block';
-            createForumSection.style.display = 'none';
-            signOutButton.style.display = 'none';
+            authButton.textContent = 'Sign In';
+            document.getElementById('createForumSection').style.display = 'none';
+            document.getElementById('userInfo').style.display = 'none';
+        }
+    }
+
+    authButton.addEventListener('click', () => {
+        if (authButton.textContent === 'Sign In') {
+            const provider = new GoogleAuthProvider();
+            signInWithPopup(auth, provider).catch(error => {
+                console.error("Error signing in: ", error.message);
+            });
+        } else {
+            signOut(auth);
         }
     });
 
-    document.getElementById('createForumForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const title = document.getElementById('title').value;
-        const description = document.getElementById('description').value;
-
-        db.collection('forums').add({
-            title: title,
-            description: description,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        })
-        .then(docRef => {
-            console.log('Forum created with ID:', docRef.id);
-            document.getElementById('title').value = '';
-            document.getElementById('description').value = '';
-            fetchForums(); // Refresh the forums list
-        })
-        .catch(error => {
-            console.error('Error adding document:', error);
-        });
+    onAuthStateChanged(auth, user => {
+        updateAuthButton(user);
+        fetchForums();
     });
 
     function fetchForums() {
-        db.collection('forums').orderBy('createdAt').get().then(querySnapshot => {
+        getDocs(collection(db, "forums")).then(querySnapshot => {
             const forumsList = document.getElementById('forumsList');
             forumsList.innerHTML = '';
             querySnapshot.forEach(doc => {
@@ -65,3 +64,4 @@
         });
     }
 });
+

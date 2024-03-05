@@ -3,24 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <title>Forum Page</title>
-    <!-- Include Firebase SDKs -->
+    <style>
+        body { position: relative; }
+        #userInfo { display: none; position: absolute; top: 20px; right: 120px; }
+        #userInfo img { width: 50px; height: 50px; border-radius: 50%; }
+    </style>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js"></script>
-    <script src="firebase_init.mjs"></script>
-    <script src="forums.mjs"></script>
+    <script type="module" src="forums.mjs"></script>
 </head>
 <body>
-    <section id="loginSection">
-        <h1>Login</h1>
-        <button id="googleLogin">Login with Google</button>
+    <section id="forumsSection">
+        <h1>THE Forum</h1>
+        <div id="forumsList">
+        </div>
     </section>
-
-    <section id="forumsSection" style="display:none;">
-        <h1>Forums</h1>
-        <div id="forumsList"></div>
-    </section>
-
+    
     <section id="createForumSection" style="display:none;">
         <h2>Create a Forum</h2>
         <form id="createForumForm">
@@ -29,9 +28,10 @@
             <button type="submit">Create Forum</button>
         </form>
     </section>
-
-    <button id="signOut" style="display:none;">Sign Out</button>
-
-
+    
+    <div id="userInfo">
+        <img id="userPic" src="" alt="User profile picture">
+        <p id="userName"></p>
+    </div>
 </body>
 </html>
