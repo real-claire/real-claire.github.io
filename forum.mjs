@@ -127,39 +127,26 @@ function displayReplyForm(parentId, level = 0) {
     const replyFormId = `replyForm-${parentId}`;
     let replyForm = document.getElementById(replyFormId);
 
-    // If the reply form doesn't exist, create it and append it to the parent post or reply
     if (!replyForm) {
-        replyForm = document.createElement('form');
+        replyForm = document.createElement('div');
         replyForm.id = replyFormId;
         replyForm.classList.add('replyForm');
+        const userName = auth.currentUser.displayName.split(' ')[0]; // Assuming you want to display the first name
         replyForm.innerHTML = `
-        <div>
-            <input type="text" class="replyInput" placeholder="Your reply..." required>
-            <button type="submit">Submit Reply</button>
-        </div>
-            `;
-        // Ensure the form submission calls `submitReply` with proper parameters
-        replyForm.onsubmit = async (event) => {
-            event.preventDefault();
-            await submitReply(event, parentId);
-            replyForm.style.display = 'none'; // Optional: Hide after submitting
-        };
-
-        // Determine the correct container for this reply form based on parentId
-        let parentContainer = document.getElementById(`replies-${parentId}`);
-        if (!parentContainer) {
-            // If there's no replies container, append directly to the post's main div
-            parentContainer = document.getElementById(`post_${parentId}`);
-        }
-
-        // Append the form and ensure it's visible
+            <div>
+                Comment as ${userName}
+                <form>
+                    <textarea class="replyInput" placeholder="Your reply..." required></textarea>
+                    <button type="submit" class="submitReplyButton">Comment</button>
+                </form>
+            </div>
+        `;
+        replyForm.querySelector('form').onsubmit = async (event) => await submitReply(event, parentId);
+        
+        let parentContainer = document.getElementById(`replies-${parentId}`) || document.getElementById(`post_${parentId}`);
         parentContainer.appendChild(replyForm);
-    } else {
-        // If the form already exists, just ensure it's visible (for repeated replies without page refresh)
-        replyForm.style.display = 'block';
     }
-
-    // Focus on the input field when displaying the form for a better user experience
+    replyForm.style.display = 'block';
     replyForm.querySelector('.replyInput').focus();
 }
 
@@ -172,7 +159,7 @@ async function submitReply(event, parentId) {
     }
 
     const form = event.currentTarget;
-    const replyContent = form.querySelector('input[type="text"]').value;
+    const replyContent = form.querySelector('.replyInput').value; // Adjusted to target class
 
     try {
         await addDoc(collection(db, "messages"), {
@@ -190,7 +177,7 @@ async function submitReply(event, parentId) {
     }
 }
 
-// Example of a postForum function
+
 async function postForum(event) {
     event.preventDefault(); // Prevent the form from submitting in the traditional way
 
