@@ -1,18 +1,20 @@
-import firebase from 'firebase/app';
-import 'firebase/firestore';
+import { initializeApp } from "firebase/app";
+import { initializeFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCNg0dn4mTW4E489OkRxwvXAzr25qOMS1M",
-    authDomain: "portfolio-forum-cce27.firebaseapp.com",
-    projectId: "portfolio-forum-cce27",
-    storageBucket: "portfolio-forum-cce27.appspot.com",
-    messagingSenderId: "200834829160",
-    appId: "1:200834829160:web:a97c64807874a4aa4c24dd",
-  };
-  
+  apiKey: "AIzaSyCNg0dn4mTW4E489OkRxwvXAzr25qOMS1M",
+  authDomain: "portfolio-forum-cce27.firebaseapp.com",
+  projectId: "portfolio-forum-cce27",
+  storageBucket: "portfolio-forum-cce27.appspot.com",
+  messagingSenderId: "200834829160",
+  appId: "1:200834829160:web:a97c64807874a4aa4c24dd",
+  measurementId: "G-Q3EFP6FDBP"
+};
+
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-var db = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+const db = initializeFirestore(firestore());
+
 const userUI = document.getElementById("userUI");
 const loginPrompt = document.getElementById("loginPrompt");
 
