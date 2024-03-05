@@ -1,5 +1,5 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
-import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, arrayUnion, serverTimestamp  } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
 const firebaseConfig = {
@@ -16,208 +16,178 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-document.addEventListener('DOMContentLoaded', () => {
-    const authButton = document.createElement('button');
-    authButton.style.position = 'absolute';
-    authButton.style.top = '20px';
-    authButton.style.right = '20px';
-    document.body.appendChild(authButton);
+document.addEventListener('DOMContentLoaded', async () => {
+    // Hide the form by default; it will be shown if a user is logged in
+    document.getElementById('createForumForm').style.display = 'none';
 
-    function updateAuthButton(user) {
+    // Listen for auth state changes to toggle UI elements based on user status
+    onAuthStateChanged(auth, (user) => {
         if (user) {
-            authButton.textContent = 'Sign Out';
-            document.getElementById('createForumSection').style.display = 'block';
-            document.getElementById('userInfo').style.display = 'block';
-            document.getElementById('userPic').src = user.photoURL || 'img.jpg'; // Fallback to a default image
-            document.getElementById('userName').textContent = `Hello, ${user.displayName.split(' ')[0]}!`;
+            document.getElementById('createForumForm').style.display = 'block';
+            document.querySelectorAll('.replyButton').forEach(el => el.style.display = 'inline-block');
         } else {
-            authButton.textContent = 'Sign In';
-            document.getElementById('createForumSection').style.display = 'none';
-            document.getElementById('userInfo').style.display = 'none';
+            document.getElementById('createForumForm').style.display = 'none';
+            document.querySelectorAll('.replyButton').forEach(el => el.style.display = 'none');
         }
-    }
-
-    authButton.addEventListener('click', () => {
-        if (authButton.textContent === 'Sign In') {
-            const provider = new GoogleAuthProvider();
-            signInWithPopup(auth, provider).catch(error => {
-                console.error("Error signing in: ", error.message);
-            });
-        } else {
-            signOut(auth);
-        }
-    });
-
-    onAuthStateChanged(auth, user => {
-        updateAuthButton(user);
+        // Fetch forums to refresh the UI based on auth state
         fetchForums();
     });
-
-    function fetchForums() {
-        getDocs(collection(db, "forums")).then(querySnapshot => {
-            const forumsList = document.getElementById('forumsList');
-            forumsList.innerHTML = '';
-            querySnapshot.forEach(forumDoc => {
-                const forum = forumDoc.data();
-                // Example forum display with a form to submit a post
-                forumsList.innerHTML += `
-                    <div id="forum_${forumDoc.id}">
-                        <h2>${forum.title}</h2>
-                        <p>${forum.description}</p>
-                        <form onsubmit="postMessage(event, '${forumDoc.id}')">
-                            <input type="text" placeholder="Write a message..." required>
-                            <button type="submit">Post</button>
-                        </form>
-                        <div id="posts_${forumDoc.id}"></div> <!-- Posts will be inserted here -->
-                    </div>
-                `;
-                fetchPosts(forumDoc.id);
-            });
-        });
-    }
-
-    window.postMessage = (event, forumId) => {
-        if (user) {
-            const postData = {
-                title: titleInput.value,
-                description: descriptionInput.value,
-                userName: user.displayName,
-                userProfilePic: user.photoURL,
-                createdAt: serverTimestamp()
-            };
-
-        event.preventDefault();
-        const messageContent = event.target.querySelector('input').value;
-        // Add document to the posts subcollection of the forum
-        addDoc(collection(db, "forums", forumId, "posts"), {
-            message: messageContent,
-            user: postData
-        }).then(() => {
-            fetchPosts(forumId); // Refresh posts
-        });
-    };
-
-    async function fetchPosts(forumId) {
-        const postsList = document.getElementById(`posts_${forumId}`);
-        postsList.innerHTML = ''; // Clear existing posts
-    
-        const postsSnapshot = await getDocs(collection(db, "forums", forumId, "posts"));
-        postsSnapshot.forEach(postDoc => {
-            const post = postDoc.data();
-            let postHtml = `
-                <div>
-                    <p>${post.message}</p>
-                    <div>Posted by: <img src="${post.userProfilePic || 'img.jpg'}" alt="User" style="width:20px;height:20px;border-radius:50%;"> ${post.userName}</div>
-                </div>
-            `;
-    
-            if (auth.currentUser) {
-                postHtml += `
-                    <button onclick="toggleReplyForm('${postDoc.id}')">Reply</button>
-                    <div id="replies_${postDoc.id}"></div> <!-- Placeholder for replies -->
-                    <form id="replyForm_${postDoc.id}" class="replyForm" onsubmit="postReply(event, '${forumId}', '${postDoc.id}')">
-                        <input type="text" placeholder="Reply..." required>
-                        <button type="submit">Send Reply</button>
-                    </form>
-                `;
-            } else {
-                postHtml += `<p>Please <a href="#" onclick="signIn()">sign in</a> to reply.</p>`;
-            }
-    
-            // Insert the constructed HTML into the posts list
-            const postElement = document.createElement('div');
-            postElement.innerHTML = postHtml;
-            postsList.appendChild(postElement);
-    
-            // Fetch replies for this post
-            fetchReplies(forumId, postDoc.id);
-        });
-    }
-    
-
-    function toggleReplyForm(postId) {
-        const replyForm = document.getElementById(`replyForm_${postId}`);
-        replyForm.style.display = replyForm.style.display === 'none' ? 'block' : 'none';
-    }
-    
-    function signIn() {
-        const provider = new GoogleAuthProvider();
-        signInWithPopup(auth, provider).catch(error => {
-            console.error("Error signing in: ", error.message);
-        });
-    }    
-
-    async function postForum(event) {
-        if (user) {
-            const postData = {
-                title: titleInput.value,
-                description: descriptionInput.value,
-                userName: user.displayName,
-                userProfilePic: user.photoURL,
-                createdAt: serverTimestamp()
-            };
-
-        event.preventDefault(); // Prevent default form submission behavior
-        const titleInput = document.getElementById('title');
-        const descriptionInput = document.getElementById('description');
-    
-        try {
-            await addDoc(collection(db, "forums"), {
-                title: titleInput.value,
-                description: descriptionInput.value,
-                user: postData,
-            });
-            console.log("Forum successfully created!");
-            titleInput.value = ''; // Clear the form fields after submission
-            descriptionInput.value = '';
-            fetchForums(); // Re-fetch forums to display the newly added one
-        } catch (error) {
-            console.error("Error creating forum: ", error);
-        }
-    }
-    // Function to submit replies to posts...
-    async function postReply(event, forumId, postId) {
-        event.preventDefault();
-        const replyInput = event.target.querySelector('input');
-        const replyContent = replyInput.value;
-    
-        try {
-            await addDoc(collection(db, "forums", forumId, "posts", postId, "replies"), {
-                message: replyContent,
-                userName: auth.currentUser.displayName.split(' ')[0],
-                userProfilePic: auth.currentUser.photoURL,
-                createdAt: serverTimestamp()
-            });
-            console.log("Reply successfully added!");
-            replyInput.value = ''; // Clear input after posting
-            fetchReplies(forumId, postId); // Refresh replies
-        } catch (error) {
-            console.error("Error adding reply: ", error);
-        }
-    }
-    
-    async function fetchReplies(forumId, postId) {
-        const repliesList = document.getElementById(`replies_${postId}`);
-        repliesList.innerHTML = ''; // Clear existing replies
-    
-        const repliesSnapshot = await getDocs(collection(db, "forums", forumId, "posts", postId, "replies"));
-        repliesSnapshot.forEach(replyDoc => {
-            const reply = replyDoc.data();
-            const replyElement = document.createElement('div');
-            replyElement.innerHTML = `
-                <p>${reply.message}</p>
-                <div>Replied by: <img src="${reply.userProfilePic || 'img.jpg'}" alt="User" style="width:15px;height:15px;border-radius:50%;"> ${reply.userName}</div>
-            `;
-            repliesList.appendChild(replyElement);
-        });
-    }
-    window.postForum = postForum;
-    }}
 });
 
 document.addEventListener('click', function(event) {
     if (event.target.matches('.replyButton')) {
         const postId = event.target.getAttribute('data-postId');
-        toggleReplyForm(postId); // Make sure this function is correctly implemented
+        displayReplyForm(postId);
     }
 });
+
+async function fetchForums() {
+    const forumsContainer = document.getElementById('forumsList');
+    forumsContainer.innerHTML = ''; // Clear existing content
+    const forumsQuery = query(collection(db, "messages"), where("parentId", "==", null), orderBy("createdAt"));
+
+    try {
+        const querySnapshot = await getDocs(forumsQuery);
+        querySnapshot.forEach(doc => {
+            const message = doc.data();
+            const messageElement = document.createElement('div');
+            messageElement.innerHTML = `
+                <div>
+                    <h3>${message.title}</h3>
+                    <p>${message.content}</p>
+                    <small>Posted by: ${message.userName}</small>
+                    ${auth.currentUser ? `<button class='replyButton' data-postId='${doc.id}'>Reply</button>` : `<p>Please sign in to reply.</p>`}
+                    <div id="replies-${doc.id}"></div>
+                </div>
+            `;
+            forumsContainer.appendChild(messageElement);
+
+            // Fetch replies for this message
+            fetchReplies(doc.id);
+        });
+    } catch (error) {
+        console.error("Error fetching forums: ", error);
+    }
+}
+
+async function fetchReplies(parentId, level = 0) {
+    const repliesContainerId = `replies-${parentId}`;
+    let repliesContainer = document.getElementById(repliesContainerId);
+
+    // Ensuring the replies container is present
+    if (!repliesContainer) {
+        repliesContainer = document.createElement('div');
+        repliesContainer.id = repliesContainerId;
+        document.querySelector(`[data-postId='${parentId}']`).parentNode.appendChild(repliesContainer);
+    }
+
+    const repliesQuery = query(collection(db, "messages"), where("parentId", "==", parentId), orderBy("createdAt"));
+
+    try {
+        const querySnapshot = await getDocs(repliesQuery);
+        querySnapshot.forEach(doc => {
+            const reply = doc.data();
+            const replyElement = document.createElement('div');
+            replyElement.classList.add('reply');
+            replyElement.style.marginLeft = `${level * 20}px`; // Visually indent replies
+            replyElement.innerHTML = `
+                <p>${reply.content}</p>
+                <small>Replied by: ${reply.userName}</small>
+                ${auth.currentUser ? `<button class='replyButton' data-postId='${doc.id}'>Reply</button>` : ''}
+                <div id="replies-${doc.id}"></div>
+            `;
+            repliesContainer.appendChild(replyElement);
+
+            // Recursively fetch further nested replies
+            fetchReplies(doc.id, level + 1);
+        });
+    } catch (error) {
+        console.error("Error fetching replies: ", error);
+    }
+}
+
+function displayReplyForm(parentId, level = 0) {
+    const replyFormId = `replyForm-${parentId}`;
+    let replyForm = document.getElementById(replyFormId);
+
+    // If the reply form doesn't exist, create it and append it to the parent post or reply
+    if (!replyForm) {
+        replyForm = document.createElement('form');
+        replyForm.id = replyFormId;
+        replyForm.classList.add('replyForm');
+        replyForm.innerHTML = `
+            <input type="text" class="replyInput" placeholder="Your reply..." required>
+            <button type="submit">Submit Reply</button>
+        `;
+        // Ensure the form submission calls `submitReply` with proper parameters
+        replyForm.onsubmit = async (event) => {
+            event.preventDefault();
+            await submitReply(event, parentId);
+            replyForm.style.display = 'none'; // Optional: Hide after submitting
+        };
+
+        // Determine the correct container for this reply form based on parentId
+        let parentContainer = document.getElementById(`replies-${parentId}`);
+        if (!parentContainer) {
+            // If there's no replies container, append directly to the post's main div
+            parentContainer = document.getElementById(`post_${parentId}`);
+        }
+
+        // Append the form and ensure it's visible
+        parentContainer.appendChild(replyForm);
+    } else {
+        // If the form already exists, just ensure it's visible (for repeated replies without page refresh)
+        replyForm.style.display = 'block';
+    }
+
+    // Focus on the input field when displaying the form for a better user experience
+    replyForm.querySelector('.replyInput').focus();
+}
+
+
+async function submitReply(event, parentId) {
+    event.preventDefault();
+    if (!auth.currentUser) {
+        alert("Please log in to reply.");
+        return;
+    }
+
+    const form = event.currentTarget;
+    const replyContent = form.querySelector('input[type="text"]').value;
+
+    try {
+        await addDoc(collection(db, "messages"), {
+            content: replyContent,
+            parentId: parentId,
+            userName: auth.currentUser.displayName,
+            userProfilePic: auth.currentUser.photoURL || 'default_profile_pic_url.jpg',
+            createdAt: serverTimestamp()
+        });
+        console.log("Reply successfully added!");
+        form.reset();
+        await fetchReplies(parentId); // Refresh to show the new reply
+    } catch (error) {
+        console.error("Error submitting reply: ", error);
+    }
+}
+
+function signIn() {
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider).then((result) => {
+        console.log("User signed in");
+        // Optionally refresh or dynamically update the UI post-login
+    }).catch(error => console.error("Error signing in: ", error.message));
+}
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        document.getElementById('createForumForm').style.display = 'block';
+        [...document.querySelectorAll('.replyButton')].forEach(btn => btn.style.display = 'inline-block');
+    } else {
+        document.getElementById('createForumForm').style.display = 'none';
+        [...document.querySelectorAll('.replyButton')].forEach(btn => btn.style.display = 'none');
+    }
+    // Re-fetch forums to refresh the UI based on auth state
+    fetchForums();
+});
+

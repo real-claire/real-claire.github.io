@@ -2,41 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Forum Page</title>
-    <style>
-        body { position: relative; }
-        #userInfo { display: none; position: absolute; top: 20px; right: 120px; }
-        #userInfo img { width: 50px; height: 50px; border-radius: 50%; }
-        .replyForm { display: none; }
-        .userInfo { display: flex; align-items: center; gap: 10px; }
-        .userInfo img { width: 20px; height: 20px; border-radius: 50%; }
-        .authButton { position: absolute; top: 20px; right: 20px; }
-        .forum, .post { margin-bottom: 20px; }
-        .replies { margin-left: 20px; }
-    </style>
+    <title>Forum</title>
+    <link rel="stylesheet" href="forum.css">
+    <script type="module" src="forum.mjs" defer></script>
 </head>
-<body>
-    <div id="authButtonContainer"></div>
-    
-    <div id="userInfo" style="display:none;">
-        <img id="userPic" src="" alt="User profile picture" style="width: 50px; height: 50px; border-radius: 50%;">
-        <p id="userName"></p>
-    </div>
-    
-    <section id="forumsSection">
-        <h1>Forums</h1>
-        <div id="forumsList"></div>
-    </section>
-    
-    <section id="createForumSection" style="display:none;">
-        <h2>Create a Forum</h2>
-        <form id="createForumForm" onsubmit="postForum(event)">
-            <input type="text" id="title" placeholder="Forum Title" required>
-            <textarea id="description" placeholder="Forum Description" required></textarea>
-            <button type="submit">Create Forum</button>
-        </form>
-    </section>
-    
-    <script type="module" src="forum.mjs"></script>
+<body> 
+    <header>
+        <button id="authButton">Sign In</button>
+        <div id="userInfo" style="display:none;">
+            <img id="userPic" src="" alt="User profile picture">
+            <span id="userName"></span>
+        </div>
+    </header>
+    <h1>the REAL forum</h1>
+
+    <main>
+        <section id="forumSection">
+            <form id="createForumForm" style="display:none;" onsubmit="postForum(event);">
+                <input type="text" id="title" placeholder="Thread Title" required>
+                <input type="text" id="content" placeholder="Write something..." required>
+                <button type="submit">Post Thread</button>
+            </form>
+            <div id="forumsList">
+                <!-- Threads and replies will be dynamically inserted here -->
+            </div>
+        </section>
+    </main>
 </body>
 </html>
