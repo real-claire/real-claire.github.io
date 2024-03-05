@@ -1,6 +1,3 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-
 const firebaseConfig = {
     apiKey: "AIzaSyCNg0dn4mTW4E489OkRxwvXAzr25qOMS1M",
     authDomain: "portfolio-forum-cce27.firebaseapp.com",
