@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-auth.js"></script>
+    <script src="firebase-init.js"></script>
+</head>
+<body>
+    <h1>Login</h1>
+    <button id="googleLogin">Login with Google</button>
+
+    <script>
+      var provider = new firebase.auth.GoogleAuthProvider();
+      
+      document.getElementById("googleLogin").addEventListener("click", function() {
+        firebase.auth().signInWithPopup(provider).then((result) => {
+          window.location.href = 'forums.html'; // Redirect on login
+        }).catch((error) => {
+          console.log(error);
+        });
+      });
+
+      firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+          window.location.href = 'forums.html'; // Redirect if already logged in
+        }
+      });
+    </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Forum</title>
+    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-firestore.js"></script>
+    <script src="firebase-init.js"></script>
+</head>
+<body>
+    <h1>Create New Forum</h1>
+    <form id="createForumForm">
+        <input type="text" id="title" placeholder="Title" required>
+        <textarea id="description" placeholder="Description" required></textarea>
+        <button type="submit">Create Forum</button>
+    </form>
+    <a href="forums.html">Back to Forums</a>
+    <script>
+      var db = firebase.firestore();
+
+      document.getElementById("createForumForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const title = document.getElementById("title").value;
+        const description = document.getElementById("description").value;
+
+        db.collection("forums").add({
+          title: title,
+          description: description,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then((docRef) => {
+          console.log("Forum created with ID: ", docRef.id);
+          // Redirect to forums list or clear form
+        })
+        .catch((error) => {
+          console.error("Error adding document: ", error);
+        });
+      });
+    </script>
+</body>
+</html>

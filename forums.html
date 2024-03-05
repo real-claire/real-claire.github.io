@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Forums</title>
+    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-auth.js"></script>
+    <script src="firebase-init.js"></script>
+</head>
+<body>
+    <h1>Forums</h1>
+    <div id="userUI" style="display:none;">
+        <button id="signOut">Sign Out</button>
+        <button id="createForum">Create Forum</button>
+        <!-- Forum creation form here, shown when "Create Forum" is clicked -->
+    </div>
+    <div id="loginPrompt">
+        <button onclick="window.location.href='login.html'">Login to Post</button>
+    </div>
+    <div id="forumsList"></div>
+
+    <script>
+        const userUI = document.getElementById("userUI");
+        const loginPrompt = document.getElementById("loginPrompt");
+        var db = firebase.firestore();
+      
+        function fetchForums() {
+            db.collection("forums").get().then((querySnapshot) => {
+                const forumsList = document.getElementById("forumsList");
+                forumsList.innerHTML = '';
+                querySnapshot.forEach((doc) => {
+                    const forum = doc.data();
+                    forumsList.innerHTML += `<div><h2>${forum.title}</h2><p>${forum.description}</p></div>`;
+                div
+                });
+            });
+        }
+        document.getElementById("signOut").addEventListener("click", function() {
+            firebase.auth().signOut().then(() => {
+            console.log("User signed out.");
+            window.location.reload();
+            });
+        });
+
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+            // User is signed in, show forum creation UI and hide login prompt
+            userUI.style.display = "block";
+            loginPrompt.style.display = "none";
+            } else {
+            // No user is signed in, hide forum creation UI and show login prompt
+            userUI.style.display = "none";
+            loginPrompt.style.display = "block";
+            }
+        });
+
+        fetchForums();
+    </script>
+</body>
+</html>
