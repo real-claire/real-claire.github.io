@@ -10,12 +10,13 @@
         .replyForm { display: none; }
         .userInfo { display: flex; align-items: center; gap: 10px; }
         .userInfo img { width: 20px; height: 20px; border-radius: 50%; }
+        .authButton { position: absolute; top: 20px; right: 20px; }
+        .forum, .post { margin-bottom: 20px; }
+        .replies { margin-left: 20px; }
     </style>
 </head>
 <body>
-    <div id="authButtonContainer" style="position: absolute; top: 20px; right: 20px;">
-        <!-- Auth button will be injected here -->
-    </div>
+    <div id="authButtonContainer"></div>
     
     <div id="userInfo" style="display:none;">
         <img id="userPic" src="" alt="User profile picture" style="width: 50px; height: 50px; border-radius: 50%;">
