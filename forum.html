@@ -7,28 +7,35 @@
         body { position: relative; }
         #userInfo { display: none; position: absolute; top: 20px; right: 120px; }
         #userInfo img { width: 50px; height: 50px; border-radius: 50%; }
+        .replyForm { display: none; }
+        .userInfo { display: flex; align-items: center; gap: 10px; }
+        .userInfo img { width: 20px; height: 20px; border-radius: 50%; }
     </style>
 </head>
 <body>
+    <div id="authButtonContainer" style="position: absolute; top: 20px; right: 20px;">
+        <!-- Auth button will be injected here -->
+    </div>
+    
+    <div id="userInfo" style="display:none;">
+        <img id="userPic" src="" alt="User profile picture" style="width: 50px; height: 50px; border-radius: 50%;">
+        <p id="userName"></p>
+    </div>
+    
     <section id="forumsSection">
-        <h1>THE Forum</h1>
-        <div id="forumsList">
-        </div>
+        <h1>Forums</h1>
+        <div id="forumsList"></div>
     </section>
     
     <section id="createForumSection" style="display:none;">
         <h2>Create a Forum</h2>
-        <form id="createForumForm">
+        <form id="createForumForm" onsubmit="postForum(event)">
             <input type="text" id="title" placeholder="Forum Title" required>
             <textarea id="description" placeholder="Forum Description" required></textarea>
             <button type="submit">Create Forum</button>
         </form>
     </section>
     
-    <div id="userInfo">
-        <img id="userPic" src="" alt="User profile picture">
-        <p id="userName"></p>
-    </div>
     <script type="module" src="forum.mjs"></script>
 </body>
 </html>

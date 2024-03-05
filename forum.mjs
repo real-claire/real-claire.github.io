@@ -88,10 +88,95 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    function fetchPosts(forumId) {
-        // Fetch and display posts (and replies) for a given forum
+    async function fetchPosts(forumId) {
+        const postsList = document.getElementById(`posts_${forumId}`);
+        postsList.innerHTML = ''; // Clear existing posts
+    
+        const postsSnapshot = await getDocs(collection(db, "forums", forumId, "posts"));
+        postsSnapshot.forEach(postDoc => {
+            const post = postDoc.data();
+            // Structure to display each post and its replies
+            const postElement = document.createElement('div');
+            postElement.innerHTML = `
+                <p>${post.message}</p>
+                <div>Posted by: <img src="${post.userProfilePic || 'img.jpg'}" alt="User" style="width:20px;height:20px;border-radius:50%;"> ${post.userName}</div>
+                <button onclick="toggleReplyForm('${postDoc.id}')">Reply</button>
+                <div id="replies_${postDoc.id}"></div> <!-- Placeholder for replies -->
+                <form id="replyForm_${postDoc.id}" style="display:none;" onsubmit="postReply(event, '${forumId}', '${postDoc.id}')">
+                    <input type="text" placeholder="Reply..." required>
+                    <button type="submit">Send Reply</button>
+                </form>
+            `;
+            postsList.appendChild(postElement);
+    
+            // Fetch replies for this post
+            fetchReplies(forumId, postDoc.id);
+        });
     }
 
+    function toggleReplyForm(postId) {
+        const replyForm = document.getElementById(`replyForm_${postId}`);
+        replyForm.style.display = replyForm.style.display === 'none' ? 'block' : 'none';
+    }
+    
+
+    async function postForum(event) {
+        event.preventDefault(); // Prevent default form submission behavior
+        const titleInput = document.getElementById('title');
+        const descriptionInput = document.getElementById('description');
+    
+        try {
+            await addDoc(collection(db, "forums"), {
+                title: titleInput.value,
+                description: descriptionInput.value,
+                // Include additional data here as needed
+                createdAt: serverTimestamp() // Use serverTimestamp for consistency
+            });
+            console.log("Forum successfully created!");
+            titleInput.value = ''; // Clear the form fields after submission
+            descriptionInput.value = '';
+            fetchForums(); // Re-fetch forums to display the newly added one
+        } catch (error) {
+            console.error("Error creating forum: ", error);
+        }
+    }
     // Function to submit replies to posts...
+    async function postReply(event, forumId, postId) {
+        event.preventDefault();
+        const replyInput = event.target.querySelector('input');
+        const replyContent = replyInput.value;
+    
+        try {
+            await addDoc(collection(db, "forums", forumId, "posts", postId, "replies"), {
+                message: replyContent,
+                userName: auth.currentUser.displayName.split(' ')[0],
+                userProfilePic: auth.currentUser.photoURL,
+                createdAt: serverTimestamp()
+            });
+            console.log("Reply successfully added!");
+            replyInput.value = ''; // Clear input after posting
+            fetchReplies(forumId, postId); // Refresh replies
+        } catch (error) {
+            console.error("Error adding reply: ", error);
+        }
+    }
+    
+    async function fetchReplies(forumId, postId) {
+        const repliesList = document.getElementById(`replies_${postId}`);
+        repliesList.innerHTML = ''; // Clear existing replies
+    
+        const repliesSnapshot = await getDocs(collection(db, "forums", forumId, "posts", postId, "replies"));
+        repliesSnapshot.forEach(replyDoc => {
+            const reply = replyDoc.data();
+            const replyElement = document.createElement('div');
+            replyElement.innerHTML = `
+                <p>${reply.message}</p>
+                <div>Replied by: <img src="${reply.userProfilePic || 'img.jpg'}" alt="User" style="width:15px;height:15px;border-radius:50%;"> ${reply.userName}</div>
+            `;
+            repliesList.appendChild(replyElement);
+        });
+    }
+    window.postForum = postForum;
+
 });
 
