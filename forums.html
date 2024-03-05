@@ -9,15 +9,22 @@
     <script type="module" src="firebase_init.mjs"></script>
 </head>
 <body>
-    <h1>Forums</h1>
-    <div id="userUI" style="display:none;">
-        <button id="signOut">Sign Out</button>
-        <button id="createForum">Create Forum</button>
-        <!-- Forum creation form here, shown when "Create Forum" is clicked -->
-    </div>
     <div id="loginPrompt">
-        <button onclick="window.location.href='login.html'">Login to Post</button>
+        <button id="googleLogin">Login with Google</button>
     </div>
-    <div id="forumsList"></div>
+    <div id="userUI" style="display: none;">
+        <button id="signOut">Sign Out</button>
+    </div>
+    <div id="forumCreation" style="display: none;">
+        <h2>Create a Forum</h2>
+        <form id="createForumForm">
+            <input type="text" id="title" placeholder="Forum Title" required>
+            <textarea id="description" placeholder="Forum Description" required></textarea>
+            <button type="submit">Create Forum</button>
+        </form>
+    </div>
+    <div id="forumsList">
+        <!-- Forums will be listed here -->
+    </div>
 </body>
 </html>
