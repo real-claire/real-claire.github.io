@@ -10,40 +10,6 @@
   <h1>Login</h1>
   <button id="googleLogin">Login with Google</button>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCNg0dn4mTW4E489OkRxwvXAzr25qOMS1M",
-      authDomain: "portfolio-forum-cce27.firebaseapp.com",
-      projectId: "portfolio-forum-cce27",
-      storageBucket: "portfolio-forum-cce27.appspot.com",
-      messagingSenderId: "200834829160",
-      appId: "1:200834829160:web:a97c64807874a4aa4c24dd",
-    };
-    
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-
-    document.getElementById("googleLogin").addEventListener("click", function(e) {
-      e.preventDefault(); // Prevent default action
-      const provider = new firebase.auth.GoogleAuthProvider();
-      firebase.auth().signInWithPopup(provider).then(function(result) {
-        // This gives you a Google Access Token. You can use it to access the Google API.
-        const token = result.credential.accessToken;
-        // The signed-in user info.
-        const user = result.user;
-        // Redirect to forums or another page after successful login
-        window.location.href = 'forums.html';
-      }).catch(function(error) {
-        // Handle Errors here.
-        console.error("Error signing in: ", error.message);
-      });
-    });
-
-    firebase.auth().onAuthStateChanged((user) => {
-      if (user) {
-        window.location.href = 'forums.html'; // Redirect if already logged in
-      }
-    });
-  </script>
+  <script src="auth.js"></script>
 </body>
 </html>

@@ -16,52 +16,6 @@
     </div>
     <div id="forumsList"></div>
 
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js">
-        const firebaseConfig = {
-            apiKey: "AIzaSyCNg0dn4mTW4E489OkRxwvXAzr25qOMS1M",
-            authDomain: "portfolio-forum-cce27.firebaseapp.com",
-            projectId: "portfolio-forum-cce27",
-            storageBucket: "portfolio-forum-cce27.appspot.com",
-            messagingSenderId: "200834829160",
-            appId: "1:200834829160:web:a97c64807874a4aa4c24dd",
-        };
-        firebase.initializeApp(firebaseConfig); 
-
-        const userUI = document.getElementById("userUI");
-        const loginPrompt = document.getElementById("loginPrompt");
-        var db = firebase.firestore();
-      
-        function fetchForums() {
-            db.collection("forums").get().then((querySnapshot) => {
-                const forumsList = document.getElementById("forumsList");
-                forumsList.innerHTML = '';
-                querySnapshot.forEach((doc) => {
-                    const forum = doc.data();
-                    forumsList.innerHTML += `<div><h2>${forum.title}</h2><p>${forum.description}</p></div>`;
-                div
-                });
-            });
-        }
-        document.getElementById("signOut").addEventListener("click", function() {
-            firebase.auth().signOut().then(() => {
-            console.log("User signed out.");
-            window.location.reload();
-            });
-        });
-
-        firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
-            // User is signed in, show forum creation UI and hide login prompt
-            userUI.style.display = "block";
-            loginPrompt.style.display = "none";
-            } else {
-            // No user is signed in, hide forum creation UI and show login prompt
-            userUI.style.display = "none";
-            loginPrompt.style.display = "block";
-            }
-        });
-
-        fetchForums();
-    </script>
+    <script src="auth.js"></script>
 </body>
 </html>
