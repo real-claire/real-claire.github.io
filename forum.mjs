@@ -18,8 +18,8 @@ const auth = getAuth(app);
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Hide the form by default; it will be shown if a user is logged in
-    const forumForm = document.getElementById('createForumForm').style.display = 'none';
-    forumForm.addEventListener('submit', postForum);
+    document.getElementById('createForumForm').style.display = 'none'; // Hide the form
+    document.getElementById('createForumForm').addEventListener('submit', postForum); // Add event listener
 
     // Listen for auth state changes to toggle UI elements based on user status
     onAuthStateChanged(auth, (user) => {
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Fetch forums to refresh the UI based on auth state
         fetchForums();
     });
-
+    
     document.getElementById('authButton').addEventListener('click', signIn);
 });
 
@@ -43,8 +43,6 @@ document.addEventListener('click', function(event) {
         displayReplyForm(postId);
     }
 });
-
-
 
 async function fetchForums() {
     const forumsContainer = document.getElementById('forumsList');
@@ -263,6 +261,8 @@ onAuthStateChanged(auth, (user) => {
 
         document.getElementById('createForumForm').style.display = 'none';
     }
+
+    fetchForums();
 });
 
 
