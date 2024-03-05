@@ -1,5 +1,5 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
-import { getFirestore, collection, getDocs, addDoc } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, arrayUnion, serverTimestamp  } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
 const firebaseConfig = {
@@ -57,11 +57,41 @@ document.addEventListener('DOMContentLoaded', () => {
         getDocs(collection(db, "forums")).then(querySnapshot => {
             const forumsList = document.getElementById('forumsList');
             forumsList.innerHTML = '';
-            querySnapshot.forEach(doc => {
-                const forum = doc.data();
-                forumsList.innerHTML += `<div><h2>${forum.title}</h2><p>${forum.description}</p></div>`;
+            querySnapshot.forEach(forumDoc => {
+                const forum = forumDoc.data();
+                // Example forum display with a form to submit a post
+                forumsList.innerHTML += `
+                    <div id="forum_${forumDoc.id}">
+                        <h2>${forum.title}</h2>
+                        <p>${forum.description}</p>
+                        <form onsubmit="postMessage(event, '${forumDoc.id}')">
+                            <input type="text" placeholder="Write a message..." required>
+                            <button type="submit">Post</button>
+                        </form>
+                        <div id="posts_${forumDoc.id}"></div> <!-- Posts will be inserted here -->
+                    </div>
+                `;
+                fetchPosts(forumDoc.id);
             });
         });
     }
+
+    window.postMessage = (event, forumId) => {
+        event.preventDefault();
+        const messageContent = event.target.querySelector('input').value;
+        // Add document to the posts subcollection of the forum
+        addDoc(collection(db, "forums", forumId, "posts"), {
+            message: messageContent,
+            // Include user info and timestamp
+        }).then(() => {
+            fetchPosts(forumId); // Refresh posts
+        });
+    };
+
+    function fetchPosts(forumId) {
+        // Fetch and display posts (and replies) for a given forum
+    }
+
+    // Function to submit replies to posts...
 });
 
