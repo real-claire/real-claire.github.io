@@ -1,3 +1,7 @@
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import 'firebase/compat/firestore';
+
 const firebaseConfig = {
     apiKey: "AIzaSyCNg0dn4mTW4E489OkRxwvXAzr25qOMS1M",
     authDomain: "portfolio-forum-cce27.firebaseapp.com",
