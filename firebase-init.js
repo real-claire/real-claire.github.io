@@ -1,7 +1,4 @@
-import { initializeApp } from "firebase/app";
-import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-
-  //nothing to see here...
+//nothing to see here...
   const firebaseConfig = {
     apiKey: "AIzaSyCNg0dn4mTW4E489OkRxwvXAzr25qOMS1M",
     authDomain: "portfolio-forum-cce27.firebaseapp.com",
@@ -11,7 +8,4 @@ import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
     appId: "1:200834829160:web:a97c64807874a4aa4c24dd",
   };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-
-  export { auth };
+  firebase.initializeApp(firebaseConfig);
