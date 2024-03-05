@@ -1,3 +1,5 @@
+import { initializeApp } from "firebase/app";
+
 const firebaseConfig = {
     apiKey: "AIzaSyCNg0dn4mTW4E489OkRxwvXAzr25qOMS1M",
     authDomain: "portfolio-forum-cce27.firebaseapp.com",
@@ -8,7 +10,7 @@ const firebaseConfig = {
   };
   
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const userUI = document.getElementById("userUI");
 const loginPrompt = document.getElementById("loginPrompt");
