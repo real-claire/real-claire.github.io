@@ -9,7 +9,7 @@ const firebaseConfig = {
   
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-var db = firebase.firestore();
+var db = firestore();
 const userUI = document.getElementById("userUI");
 const loginPrompt = document.getElementById("loginPrompt");
 
