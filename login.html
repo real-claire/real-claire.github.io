@@ -7,9 +7,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compact.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-auth-compat.js"></script>
     <script>
-      import firebase from 'firebase/compat/app';
-      import 'firebase/compat/auth';
-      import 'firebase/compat/firestore';
+      import firebase from 'node_modules/firebase/compat/app';
+      import 'node_modules/firebase/compat/auth';
+      import 'node_modules/firebase/compat/firestore';
       const firebaseConfig = {
       apiKey: "AIzaSyCNg0dn4mTW4E489OkRxwvXAzr25qOMS1M",
       authDomain: "portfolio-forum-cce27.firebaseapp.com",
@@ -26,13 +26,13 @@
   <button id="googleLogin">Login with Google</button>
 
   <script>
-    import firebase from 'firebase/compat/app';
-    import 'firebase/compat/auth';
-    import 'firebase/compat/firestore';
+    import firebase from 'node_modules/firebase/compat/app';
+    import 'node_modules/firebase/compat/auth';
+    import 'node_modules/firebase/compat/firestore';
     document.getElementById("googleLogin").addEventListener("click", function(e) {
       e.preventDefault(); // Prevent default action
-      const provider = new firebase.auth.GoogleAuthProvider();
-      firebase.auth().signInWithPopup(provider).then(function(result) {
+      const provider = new auth.GoogleAuthProvider();
+      auth().signInWithPopup(provider).then(function(result) {
         // This gives you a Google Access Token. You can use it to access the Google API.
         const token = result.credential.accessToken;
         // The signed-in user info.
@@ -51,7 +51,7 @@
       });
     });
 
-    firebase.auth().onAuthStateChanged((user) => {
+    auth().onAuthStateChanged((user) => {
       if (user) {
         window.location.href = 'forums.html'; // Redirect if already logged in
       }
