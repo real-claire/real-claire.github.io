@@ -23,6 +23,10 @@ header {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+.userInfo {
+    margin-top: 0.5cap;
+}
+
 .reply {
     border-radius: 5px;
     border-left: 4px solid #7b685a;
@@ -114,7 +118,7 @@ input[type="submit"]:hover {
     background-color: #b39783;
 }
 
-#userInfo img, .reply img {
+#userInfo img, .reply img, .userpic {
     width: 30px;
     height: 30px;
 }

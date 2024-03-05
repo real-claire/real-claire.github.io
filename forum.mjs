@@ -293,11 +293,3 @@ onAuthStateChanged(auth, (user) => {
         document.getElementById('createForumForm').style.display = 'none';
     }
 });
-
-await addDoc(collection(db, "messages"), {
-    content: replyContent,
-    parentId: parentId,
-    userName: auth.currentUser.displayName,
-    userProfilePic: auth.currentUser.photoURL,
-    createdAt: serverTimestamp(), // Ensure this is included when adding a doc
-});
