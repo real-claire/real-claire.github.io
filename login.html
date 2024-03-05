@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
 </head>
 <body>
   <h1>Login</h1>
   <button id="googleLogin">Login with Google</button>
 
-  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js">
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyCNg0dn4mTW4E489OkRxwvXAzr25qOMS1M",
       authDomain: "portfolio-forum-cce27.firebaseapp.com",
@@ -17,11 +19,13 @@
       messagingSenderId: "200834829160",
       appId: "1:200834829160:web:a97c64807874a4aa4c24dd",
     };
-    firebase.initializeApp(firebaseConfig); 
     
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
     document.getElementById("googleLogin").addEventListener("click", function(e) {
-      firebase.e.preventDefault(); // Prevent default action
-      const provider = new auth.GoogleAuthProvider();
+      e.preventDefault(); // Prevent default action
+      const provider = new firebase.auth.GoogleAuthProvider();
       firebase.auth().signInWithPopup(provider).then(function(result) {
         // This gives you a Google Access Token. You can use it to access the Google API.
         const token = result.credential.accessToken;
@@ -31,13 +35,7 @@
         window.location.href = 'forums.html';
       }).catch(function(error) {
         // Handle Errors here.
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        // The email of the user's account used.
-        const email = error.email;
-        // The firebase.auth.AuthCredential type that was used.
-        const credential = error.credential;
-        console.log("Error signing in: ", errorMessage);
+        console.error("Error signing in: ", error.message);
       });
     });
 
