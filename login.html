@@ -26,6 +26,9 @@
   <button id="googleLogin">Login with Google</button>
 
   <script>
+    import firebase from 'firebase/compat/app';
+    import 'firebase/compat/auth';
+    import 'firebase/compat/firestore';
     document.getElementById("googleLogin").addEventListener("click", function(e) {
       e.preventDefault(); // Prevent default action
       const provider = new firebase.auth.GoogleAuthProvider();

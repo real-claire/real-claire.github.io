@@ -33,6 +33,9 @@
     <div id="forumsList"></div>
 
     <script>
+        import firebase from 'firebase/compat/app';
+        import 'firebase/compat/auth';
+        import 'firebase/compat/firestore';
         const userUI = document.getElementById("userUI");
         const loginPrompt = document.getElementById("loginPrompt");
         var db = firebase.firestore();
