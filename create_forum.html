@@ -29,21 +29,17 @@
     </form>
     <a href="forums.html">Back to Forums</a>
     <script>
-      import firebase from 'node_modules/firebase/compat/app';
-      import 'node_modules/firebase/compat/auth';
-      import 'node_modules/firebase/compat/firestore';
-
-      var db = firestore();
+      var db = firebase.firestore();
 
       document.getElementById("createForumForm").addEventListener("submit", function(e) {
-        e.preventDefault();
+        firebase.e.preventDefault();
         const title = document.getElementById("title").value;
         const description = document.getElementById("description").value;
 
         db.collection("forums").add({
           title: title,
           description: description,
-          createdAt: FieldValue.serverTimestamp()
+          createdAt: firebase.FieldValue.serverTimestamp()
         })
         .then((docRef) => {
           console.log("Forum created with ID: ", docRef.id);

@@ -26,13 +26,10 @@
   <button id="googleLogin">Login with Google</button>
 
   <script>
-    import firebase from 'node_modules/firebase/compat/app';
-    import 'node_modules/firebase/compat/auth';
-    import 'node_modules/firebase/compat/firestore';
     document.getElementById("googleLogin").addEventListener("click", function(e) {
-      e.preventDefault(); // Prevent default action
+      firebase.e.preventDefault(); // Prevent default action
       const provider = new auth.GoogleAuthProvider();
-      auth().signInWithPopup(provider).then(function(result) {
+      firebase.auth().signInWithPopup(provider).then(function(result) {
         // This gives you a Google Access Token. You can use it to access the Google API.
         const token = result.credential.accessToken;
         // The signed-in user info.
@@ -51,7 +48,7 @@
       });
     });
 
-    auth().onAuthStateChanged((user) => {
+    firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         window.location.href = 'forums.html'; // Redirect if already logged in
       }
