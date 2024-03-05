@@ -2,29 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Forums</title>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
-    <script type="module" src="firebase_init.mjs"></script>
+    <title>Forum Page</title>
+    <!-- Include Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js"></script>
+    <script src="firebase_init.mjs"></script>
+    <script src="forums.mjs"></script>
 </head>
 <body>
-    <div id="loginPrompt">
+    <section id="loginSection">
+        <h1>Login</h1>
         <button id="googleLogin">Login with Google</button>
-    </div>
-    <div id="userUI" style="display: none;">
-        <button id="signOut">Sign Out</button>
-    </div>
-    <div id="forumCreation" style="display: none;">
+    </section>
+
+    <section id="forumsSection" style="display:none;">
+        <h1>Forums</h1>
+        <div id="forumsList"></div>
+    </section>
+
+    <section id="createForumSection" style="display:none;">
         <h2>Create a Forum</h2>
         <form id="createForumForm">
             <input type="text" id="title" placeholder="Forum Title" required>
             <textarea id="description" placeholder="Forum Description" required></textarea>
             <button type="submit">Create Forum</button>
         </form>
-    </div>
-    <div id="forumsList">
-        <!-- Forums will be listed here -->
-    </div>
+    </section>
+
+    <button id="signOut" style="display:none;">Sign Out</button>
+
+
 </body>
 </html>
