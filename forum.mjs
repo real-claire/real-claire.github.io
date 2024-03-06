@@ -223,6 +223,7 @@ async function submitReply(event, parentId, form) {
     } catch (error) {
         console.error("Error submitting reply: ", error);
     }
+    fetchReplies(parentId);
 }
 
 async function submitReplyToThread(postId, replyContent) {
