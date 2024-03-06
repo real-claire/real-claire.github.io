@@ -123,6 +123,7 @@ async function fetchForums(sortOrder = 'desc') {
 async function fetchReplies(parentId, level = 0) {
     const repliesContainerId = `replies-${parentId}`;
     let repliesContainer = document.getElementById(repliesContainerId);
+    repliesContainer.innerHTML = ''; // Clear existing replies first
 
     // Ensuring the replies container is present
     if (!repliesContainer) {
