@@ -11,17 +11,14 @@ const firebaseConfig = {
     appId: "1:200834829160:web:a97c64807874a4aa4c24dd",
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Hide the form by default; it will be shown if a user is logged in
-    document.getElementById('createForumForm').style.display = 'none'; // Hide the form
-    document.getElementById('createForumForm').addEventListener('submit', postForum); // Add event listener
+    document.getElementById('createForumForm').style.display = 'none';
+    document.getElementById('createForumForm').addEventListener('submit', postForum);
 
-    // Listen for auth state changes to toggle UI elements based on user status
     onAuthStateChanged(auth, (user) => {
         if (user) {
             document.getElementById('createForumForm').style.display = 'block';
@@ -30,16 +27,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('createForumForm').style.display = 'none';
             document.querySelectorAll('.replyButton').forEach(el => el.style.display = 'none');
         }
-        // Fetch forums to refresh the UI based on auth state
         fetchForums();
     });
 
-    // Check if sortOrderSelect exists before adding event listener
     const sortOrderSelect = document.getElementById('sortOrderSelect');
     if (sortOrderSelect) {
         sortOrderSelect.addEventListener('change', function() {
             const selectedSortOrder = this.value;
-            fetchForums(selectedSortOrder); // Fetch forums with the selected sort order
+            fetchForums(selectedSortOrder);
         });
     } else {
         console.error('sortOrderSelect element not found.');
@@ -49,14 +44,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.addEventListener('click', function(event) {
         if (event.target.matches('.replyButton')) {
-            // Existing logic to handle reply button clicks
             const postId = event.target.getAttribute('data-postId');
             displayReplyForm(postId);
         } else if (event.target.matches('.commentButton')) {
-            // Logic for handling comment button clicks
-            // This should include fetching the text area value, submitting the reply, and clearing the input
             const postId = event.target.getAttribute('data-postId');
-            const replyContent = event.target.previousElementSibling.value; // Assuming the text area is directly before the button
+            const replyContent = event.target.previousElementSibling.value;
             if (replyContent.trim()) {
                 submitReplyToThread(postId, replyContent, event.target);
             }
@@ -66,7 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function fetchForums(sortOrder = 'desc') {
     const forumsContainer = document.getElementById('forumsList');
-    forumsContainer.innerHTML = ''; // Clear existing content
+    forumsContainer.innerHTML = '';
 
     try {
         let forumsQuery = query(collection(db, "messages"), 
@@ -81,7 +73,6 @@ async function fetchForums(sortOrder = 'desc') {
 
         querySnapshot.forEach(doc => {
             const message = doc.data();
-            // Assign an ID to each forum post container for later reference
             const postId = `post-${doc.id}`;
             const messageElement = document.createElement('div');
             const replyBoxHTML = auth.currentUser ? `
@@ -90,7 +81,7 @@ async function fetchForums(sortOrder = 'desc') {
                     <button class="commentButton" data-postId="${doc.id}">Comment</button>
                 </div>
             ` : '';
-            messageElement.setAttribute('id', postId); // Important for associating replies
+            messageElement.setAttribute('id', postId);
             messageElement.innerHTML = `
                 <div>
                     <img src="${message.userProfilePic || 'default_avatar.png'}" alt="User profile picture" class="user-pic">
@@ -108,7 +99,6 @@ async function fetchForums(sortOrder = 'desc') {
             `;
             forumsContainer.appendChild(messageElement);
 
-            // Fetch replies for this message
             fetchReplies(doc.id);
         });
     } catch (error) {
@@ -117,13 +107,11 @@ async function fetchForums(sortOrder = 'desc') {
     }
 }
 
-
 async function fetchReplies(parentId, level = 0) {
     const repliesContainerId = `replies-${parentId}`;
     let repliesContainer = document.getElementById(repliesContainerId);
-    repliesContainer.innerHTML = ''; // Clear existing replies first
+    repliesContainer.innerHTML = '';
 
-    // Ensuring the replies container is present
     if (!repliesContainer) {
         repliesContainer = document.createElement('div');
         repliesContainer.id = repliesContainerId;
@@ -138,7 +126,7 @@ async function fetchReplies(parentId, level = 0) {
             const reply = doc.data();
             const replyElement = document.createElement('div');
             replyElement.classList.add('reply');
-            replyElement.style.marginLeft = `${level + 20}px`; // Visually indent replies
+            replyElement.style.marginLeft = `${level + 20}px`;
             replyElement.innerHTML = `
             <div class="nestedReply">
                 <img src="${reply.userProfilePic || 'default_avatar.png'}" alt="User profile picture" class="user-pic">
@@ -165,7 +153,7 @@ function displayReplyForm(postId, level = 0) {
     let replyForm = document.getElementById(replyFormId);
 
     if (!replyForm) {
-        const formContainer = document.createElement('div'); // This is the container div
+        const formContainer = document.createElement('div');
         formContainer.id = replyFormId;
         formContainer.classList.add('replyForm');
         formContainer.innerHTML = `
@@ -181,16 +169,23 @@ function displayReplyForm(postId, level = 0) {
         let parentContainer = document.getElementById(`replies-${postId}`) || document.getElementById(`post-${postId}`);
         parentContainer.appendChild(formContainer);
         
-        const form = formContainer.querySelector('form'); // Correctly target the <form> for event handling
-        form.onsubmit = async (event) => await submitReply(event, postId, form); // Pass the form to submitReply
-        formContainer.querySelector('.cancelReply').onclick = () => closeReplyForm(form); // Adjust to pass the form to closeReplyForm
-    }
+        formContainer.style.display = 'block';
+        formContainer.querySelector('.replyInput').focus();
+        formContainer.querySelector('.cancelReply').onclick = () => closeReplyForm(form);
 
-    replyForm.style.display = 'block'; // Show the form
-    replyForm.querySelector('.replyInput').focus(); // Focus on the input field
+        const form = formContainer.querySelector('form');
+        form.onsubmit = async (event) => await submitReply(event, postId, form);
+        form.reset();
+    } else {
+        replyForm.style.display = 'block';
+        replyForm.querySelector('.replyInput').focus();
+    }
 }    
 
-
+function closeReplyForm(form) {
+    form.style.display = 'none';
+    form.reset();
+}
 
 async function submitReply(event, parentId, form) {
     event.preventDefault();
@@ -243,11 +238,6 @@ async function submitReplyToThread(postId, replyContent) {
 
 }
 
-function closeReplyForm(form) {
-    form.style.display = 'none';
-    form.reset();
-}
-
 async function postForum(event) {
     event.preventDefault(); // Prevent the form from submitting in the traditional way
 
@@ -278,7 +268,6 @@ async function postForum(event) {
     }
 }
 
-// Example signIn function
 function signIn() {
     const provider = new GoogleAuthProvider();
     signInWithPopup(auth, provider)
@@ -295,7 +284,6 @@ function signIn() {
 function signOutUser() {
     signOut(auth).then(() => {
         console.log("User signed out successfully");
-        // Optionally, redirect the user or provide a notification
     }).catch((error) => {
         console.error("Error signing out: ", error);
         alert("Failed to sign out.");
@@ -303,34 +291,28 @@ function signOutUser() {
 }
 
 function formatDate(timestamp) {
-    const date = timestamp.toDate(); // Convert Firestore timestamp to JavaScript Date object
+    const date = timestamp.toDate();
     const now = new Date();
     const secondsAgo = Math.round((now - date) / 1000);
-    const minutesAgo = Math.round(secondsAgo / 60);
-    const hoursAgo = Math.round(minutesAgo / 60);
-    const daysAgo = Math.round(hoursAgo / 24);
-    const weeksAgo = Math.round(daysAgo / 7);
-    const monthsAgo = Math.round(daysAgo / 30);
-    const yearsAgo = Math.round(daysAgo / 365);
 
-    if (secondsAgo < 60) {
-        return 'just now';
-    } else if (minutesAgo < 60) {
-        return `${minutesAgo} mins. ago`;
-    } else if (hoursAgo < 24) {
-        return `${hoursAgo} hours ago`;
-    } else if (daysAgo < 7) {
-        return `${daysAgo} days ago`;
-    } else if (weeksAgo < 5) {
-        return `${weeksAgo} weeks ago`;
-    } else if (monthsAgo < 12) {
-        return `${monthsAgo} months ago`;
-    } else {
-        return `${yearsAgo} years ago`;
+    const timeUnits = [
+        { unit: "year", seconds: 31536000 },
+        { unit: "month", seconds: 2592000 },
+        { unit: "week", seconds: 604800 },
+        { unit: "day", seconds: 86400 },
+        { unit: "hour", seconds: 3600 },
+        { unit: "min", seconds: 60 },
+    ];
+
+    for (let {unit, seconds} of timeUnits) {
+        const count = Math.floor(secondsAgo / seconds);
+        if (count >= 1) {
+            return `${count} ${unit}${count > 1 ? 's' : ''} ago`;
+        }
     }
+
+    return 'just now';
 }
-
-
 
 onAuthStateChanged(auth, (user) => {
     const userInfo = document.getElementById('userInfo');

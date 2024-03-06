@@ -15,32 +15,47 @@ header {
     border-radius: 5px;
 }
 
+small {
+    display: block;
+    margin-top: 2px;
+    color: #666;
+}
+
 #forumsList > div {
     background-color: white;
     padding: 10px;
     margin-bottom: 10px;
     border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.text-container {
+    display: flex;
+    padding-left: 5.5cap;
+    margin-top: -4.25cap;
+    flex-direction: column;
+}
+
+#userInfo img, .reply img, .userpic {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+}
+
+.user-pic {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
 .userInfo {
     margin-top: 0.5cap;
 }
 
-.reply {
-    border-radius: 5px;
-    border-left: 4px solid #7b685a;
-    padding-left: 16px;
-}
-
-.replyButton {
+.thread-title {
+    margin-top: 1cap;
     margin-bottom: 0.5cap;
-}
-
-.comment-as {
-    position: relative;
-    display: flex;
-    flex-direction: column;
 }
 
 #commentText {
@@ -62,50 +77,46 @@ header {
     border-radius: 4px;
 }
 
-.nestedReply h3 {
-        margin-top: -2.25cap;
-        margin-left: 3cap;
-}
-
-.nestedReply small {
-    margin-top: -3.75cap;
-    margin-left: 10cap;
-}
-
-.thread-title {
-    margin-top: 1cap;
-    margin-bottom: 0.5cap;
-}
-
-.replies {
-    margin-left: 5cap;
+.comment-as {
+    position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .line {
     border-bottom: 1px solid #888;
 }
 
-.user-pic {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    object-fit: cover; /* Ensures the image covers the area without stretching */
+.replies {
+    margin-left: 4cap;
 }
 
-.text-container {
-    display: flex;
-    padding-left: 5.5cap;
-    margin-top: -4.25cap;
-    flex-direction: column; /* Stacks items vertically */
+.reply {
+    border-left: 4px solid #7b685a;
+    padding-left: 16px;
+    padding-bottom: 1cap;
 }
 
+.replyButton {
+    margin-bottom: 0.5cap;
+}
+
+.nestedReply h3 {
+    margin-top: -2.25cap;
+    margin-left: 3cap;
+}
+
+.nestedReply small {
+margin-top: -3.75cap;
+margin-left: 10cap;
+}
 
 input[type="text"], input[type="submit"] {
     padding: 8px;
     margin: 5px 0;
     border-radius: 4px;
     border: 1px solid #ddd;
-    width: calc(100% - 18px); /* Adjust width to account for padding and border */
+    width: calc(100% - 18px);
 }
 
 input[type="submit"] {
@@ -116,16 +127,4 @@ input[type="submit"] {
 
 input[type="submit"]:hover {
     background-color: #b39783;
-}
-
-#userInfo img, .reply img, .userpic {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-}
-
-small {
-    display: block;
-    margin-top: 2px;
-    color: #666;
 }
