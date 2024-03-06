@@ -69,13 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Close the dropdown if the user clicks outside of it
     window.onclick = function(event) {
         if (!event.target.matches('#userInfo, #userInfo *')) {
-            var dropdowns = document.getElementsByClassName("dropdown-content");
-            for (var i = 0; i < dropdowns.length; i++) {
-                var openDropdown = dropdowns[i];
-                if (openDropdown.style.display === "block") {
-                    openDropdown.style.display = "none";
-                }
-            }
+            userDropdown.style.display = 'none';
         }
     };
 });
@@ -343,24 +337,23 @@ function formatDate(timestamp) {
     return 'just now';
 }
 
+function toggleDropdown() {
+    const userDropdown = document.getElementById('userDropdown');
+    userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block';
+}
+
 onAuthStateChanged(auth, (user) => {
     const userInfo = document.getElementById('userInfo');
     const authButton = document.getElementById('authButton');
 
     if (user) {
-        userPic.src = user.photoURL || 'default_avatar.png';
-        userName.textContent = `Hello, ${user.displayName.split(' ')[0]}`;
-
+        document.getElementById('userPic').src = user.photoURL || 'default_avatar.png';
+        document.getElementById('userName').textContent = `Hello, ${user.displayName.split(' ')[0]}`;
+        
         userInfo.style.display = 'flex';
         authButton.style.display = 'none';
-        userInfo.onclick = function() {
-            userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block';
-        };
-
-        document.getElementById('signOutButton').onclick = signOutUser;
     } else {
         userInfo.style.display = 'none';
-        authButton.textContent = 'Sign In';
-        authButton.onclick = signIn;   
-     }
+        authButton.style.display = 'block';
+    }
 });

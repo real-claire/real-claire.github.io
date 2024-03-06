@@ -8,17 +8,22 @@
 </head>
 <body> 
     <header>
-        <div id="userInfo" style="display:none;">
-            <img id="userPic" src="" alt="User profile picture">
-            <span id="userName"></span>
+        <div class="header-content">
+            <h3>the REAL forum</h3>
+        </div>
+        <div id="userInfo" style="display:none;" class="user-info">
+            <div class="user-details" onclick="toggleDropdown()">
+                <img id="userPic" src="" alt="User profile picture" class="userPic">
+                <span id="userName"></span>
+            </div>
+            <!-- Dropdown Content Container for "Log Out" -->
             <div id="userDropdown" class="dropdown-content">
-                <button id="signOutButton">Sign Out</button>
+                <button id="signOutButton">Log Out</button>
             </div>
         </div>
-        <button id="authButton" style="display: none;">Sign In</button>
-    </header>
+        <button id="authButton">Sign In</button>
+    </header><br>
     
-    <h1>the REAL forum</h1>
     <div class="sort-options">
         <label for="sortOrder">Sort by:</label>
         <select id="sortOrderSelect">
