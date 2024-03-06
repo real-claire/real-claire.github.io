@@ -237,21 +237,15 @@ async function submitReplyToThread(postId, replyContent) {
         // Clear the input field after posting
         document.querySelector(`[data-postId="${postId}"]`).previousElementSibling.value = '';
         // Optionally, refresh replies to show the new reply
-        fetchReplies(postId);
     } catch (error) {
         console.error("Error submitting reply to thread: ", error);
     }
 }
 
-
-
-
 function closeReplyForm(form) {
     form.style.display = 'none';
     form.reset();
 }
-
-
 
 async function postForum(event) {
     event.preventDefault(); // Prevent the form from submitting in the traditional way
@@ -282,7 +276,6 @@ async function postForum(event) {
         alert("Failed to post the thread.");
     }
 }
-
 
 // Example signIn function
 function signIn() {
