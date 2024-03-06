@@ -15,6 +15,35 @@ header {
     border-radius: 5px;
 }
 
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    right: 0;
+    border-radius: 5px;
+    top: 100%;
+}
+
+.dropdown-content button {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    background-color: white;
+    border: none;
+    text-align: left;
+    width: 100%;
+    border-radius: 5px;
+}
+
+.dropdown-content button:hover {
+    background-color: #f1f1f1;
+}
+
+
 small {
     display: block;
     margin-top: 2px;
@@ -107,8 +136,8 @@ small {
 }
 
 .nestedReply small {
-margin-top: -3.75cap;
-margin-left: 10cap;
+    margin-top: -3.75cap;
+    margin-left: 10cap;
 }
 
 input[type="text"], input[type="submit"] {

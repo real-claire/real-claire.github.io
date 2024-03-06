@@ -54,6 +54,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
     });
+
+    // Event listener for sign-in button
+    document.getElementById("authButton").addEventListener("click", signIn);
+
+    // Event listener for sign-out button within the dropdown
+    document.getElementById("signOutButton").addEventListener("click", signOutUser);
+
+    // Dropdown toggle logic (same as provided in the previous message)
+    document.getElementById("userInfo").addEventListener("click", function() {
+        document.getElementById("userDropdown").style.display = "block";
+    });
+
+    // Close the dropdown if the user clicks outside of it
+    window.onclick = function(event) {
+        if (!event.target.matches('#userInfo, #userInfo *')) {
+            var dropdowns = document.getElementsByClassName("dropdown-content");
+            for (var i = 0; i < dropdowns.length; i++) {
+                var openDropdown = dropdowns[i];
+                if (openDropdown.style.display === "block") {
+                    openDropdown.style.display = "none";
+                }
+            }
+        }
+    };
 });
 
 async function fetchForums(sortOrder = 'desc') {
@@ -273,7 +297,10 @@ function signIn() {
     signInWithPopup(auth, provider)
         .then((result) => {
             console.log("User signed in");
-            // Update UI or redirect as necessary
+            document.getElementById("userInfo").style.display = "flex";
+            document.getElementById("authButton").style.display = "none";
+            document.getElementById("userPic").src = result.user.photoURL || 'default_avatar.png';
+            document.getElementById("userName").textContent = result.user.displayName;
         })
         .catch((error) => {
             console.error("Error signing in: ", error);
@@ -284,6 +311,8 @@ function signIn() {
 function signOutUser() {
     signOut(auth).then(() => {
         console.log("User signed out successfully");
+        document.getElementById("userInfo").style.display = "none";
+        document.getElementById("authButton").style.display = "block";
     }).catch((error) => {
         console.error("Error signing out: ", error);
         alert("Failed to sign out.");
@@ -319,26 +348,19 @@ onAuthStateChanged(auth, (user) => {
     const authButton = document.getElementById('authButton');
 
     if (user) {
-        // Display user info and change button to "Log Out"
-        const userPic = document.getElementById('userPic');
-        const userName = document.getElementById('userName');
+        userPic.src = user.photoURL || 'default_avatar.png';
+        userName.textContent = `Hello, ${user.displayName.split(' ')[0]}`;
 
-        userPic.src = user.photoURL || 'default_avatar.png'; // Use a default avatar if the user doesn't have a photoURL
-        userName.textContent = `Hello, ${user.displayName.split(' ')[0]}`; // Assuming the displayName format is "First Last"
+        userInfo.style.display = 'flex';
+        authButton.style.display = 'none';
+        userInfo.onclick = function() {
+            userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block';
+        };
 
-        userInfo.style.display = 'block';
-        authButton.textContent = 'Log Out';
-        authButton.removeEventListener('click', signIn);
-        authButton.addEventListener('click', signOutUser);
-
-        document.getElementById('createForumForm').style.display = 'block';
+        document.getElementById('signOutButton').onclick = signOutUser;
     } else {
-        // Hide user info and change button to "Sign In"
         userInfo.style.display = 'none';
         authButton.textContent = 'Sign In';
-        authButton.removeEventListener('click', signOutUser);
-        authButton.addEventListener('click', signIn);
-
-        document.getElementById('createForumForm').style.display = 'none';
-    }
+        authButton.onclick = signIn;   
+     }
 });

@@ -8,12 +8,16 @@
 </head>
 <body> 
     <header>
-        <button id="authButton">Sign In</button>
         <div id="userInfo" style="display:none;">
             <img id="userPic" src="" alt="User profile picture">
             <span id="userName"></span>
+            <div id="userDropdown" class="dropdown-content">
+                <button id="signOutButton">Sign Out</button>
+            </div>
         </div>
+        <button id="authButton" style="display: none;">Sign In</button>
     </header>
+    
     <h1>the REAL forum</h1>
     <div class="sort-options">
         <label for="sortOrder">Sort by:</label>
