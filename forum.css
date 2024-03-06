@@ -121,6 +121,7 @@ input[type="submit"]:hover {
 #userInfo img, .reply img, .userpic {
     width: 30px;
     height: 30px;
+    border-radius: 50%;
 }
 
 small {

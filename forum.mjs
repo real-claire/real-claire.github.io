@@ -104,7 +104,7 @@ async function fetchReplies(parentId, level = 0) {
             const reply = doc.data();
             const replyElement = document.createElement('div');
             replyElement.classList.add('reply');
-            replyElement.style.marginLeft = `${level * 20}px`; // Visually indent replies
+            replyElement.style.marginLeft = `${level + 20}px`; // Visually indent replies
             replyElement.innerHTML = `
             <div class="nestedReply">
                 <img src="${reply.userProfilePic || 'default_avatar.png'}" alt="User profile picture" class="user-pic">
@@ -131,24 +131,25 @@ function displayReplyForm(postId, level = 0) {
     let replyForm = document.getElementById(replyFormId);
 
     if (!replyForm) {
-        replyForm = document.createElement('div');
-        replyForm.id = replyFormId;
-        replyForm.classList.add('replyForm');
-        replyForm.innerHTML = `
-            <div>
+        const formContainer = document.createElement('div'); // This is the container div
+        formContainer.id = replyFormId;
+        formContainer.classList.add('replyForm');
+        formContainer.innerHTML = `
+            <form>
                 <textarea class="replyInput" placeholder="Your reply..." required></textarea>
                 <div class="form-actions">
                     <button type="submit" class="submitReply">Submit Reply</button>
                     <button type="button" class="cancelReply">Cancel</button>
                 </div>
-            </div>
+            </form>
         `;
-
-        let parentContainer = document.getElementById(`replies-${postId}`) || document.getElementById(`post-${postId}`);
-        parentContainer.appendChild(replyForm);
+    
+        let parentContainer = document.getElementById(`replies-${parentId}`) || document.getElementById(`post-${parentId}`);
+        parentContainer.appendChild(formContainer);
         
-        replyForm.querySelector('.submitReply').onclick = async (event) => await submitReply(event, postId, replyForm);
-        replyForm.querySelector('.cancelReply').onclick = () => closeReplyForm(replyForm);
+        const form = formContainer.querySelector('form'); // Correctly target the <form> for event handling
+        form.onsubmit = async (event) => await submitReply(event, parentId, form); // Pass the form to submitReply
+        formContainer.querySelector('.cancelReply').onclick = () => closeReplyForm(form); // Adjust to pass the form to closeReplyForm
     }
 
     replyForm.style.display = 'block'; // Show the form
@@ -157,14 +158,14 @@ function displayReplyForm(postId, level = 0) {
 
 
 
-async function submitReply(event, parentId, formElement) {
+async function submitReply(event, parentId, form) {
     event.preventDefault();
     if (!auth.currentUser) {
         alert("Please log in to reply.");
         return;
     }
 
-    const replyContent = formElement.querySelector('.replyInput').value;
+    const replyContent = form.querySelector('.replyInput').value;
     
     if (replyContent.trim() === "") {
         alert("Reply cannot be empty.");
@@ -180,8 +181,8 @@ async function submitReply(event, parentId, formElement) {
             createdAt: serverTimestamp(),
         });
         console.log("Reply successfully added!");
-        formElement.reset();
-        formElement.style.display = 'none'; // Hide the form after successful submission
+        form.reset();
+        form.style.display = 'none'; // Ensure form is correctly targeted for hiding
         await fetchReplies(parentId);
     } catch (error) {
         console.error("Error submitting reply: ", error);
@@ -189,9 +190,10 @@ async function submitReply(event, parentId, formElement) {
 }
 
 
-function closeReplyForm(formElement) {
-    formElement.style.display = 'none'; // Hide the form
-    formElement.reset(); // Optional: Clear the input field
+
+function closeReplyForm(form) {
+    form.style.display = 'none';
+    form.reset();
 }
 
 
