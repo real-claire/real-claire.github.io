@@ -44,6 +44,9 @@ document.addEventListener('click', function(event) {
     }
 });
 
+document.getElementById('createForumForm')?.addEventListener('submit', postForum);
+
+
 async function fetchForums() {
     const forumsContainer = document.getElementById('forumsList');
     forumsContainer.innerHTML = ''; // Clear existing content
@@ -123,43 +126,50 @@ async function fetchReplies(parentId, level = 0) {
     }
 }
 
-function displayReplyForm(parentId, level = 0) {
-    const replyFormId = `replyForm-${parentId}`;
+function displayReplyForm(postId, level = 0) {
+    const replyFormId = `replyForm-${postId}`;
     let replyForm = document.getElementById(replyFormId);
 
     if (!replyForm) {
         replyForm = document.createElement('div');
         replyForm.id = replyFormId;
         replyForm.classList.add('replyForm');
-        const userName = auth.currentUser.displayName.split(' ')[0]; // Assuming you want to display the first name
         replyForm.innerHTML = `
             <div>
-                Comment as ${userName}
-                <form>
-                    <textarea class="replyInput" placeholder="Your reply..." required></textarea>
-                    <button type="submit" class="submitReplyButton">Comment</button>
-                </form>
+                <textarea class="replyInput" placeholder="Your reply..." required></textarea>
+                <div class="form-actions">
+                    <button type="submit" class="submitReply">Submit Reply</button>
+                    <button type="button" class="cancelReply">Cancel</button>
+                </div>
             </div>
         `;
-        replyForm.querySelector('form').onsubmit = async (event) => await submitReply(event, parentId);
-        
-        let parentContainer = document.getElementById(`replies-${parentId}`) || document.getElementById(`post_${parentId}`);
+
+        let parentContainer = document.getElementById(`replies-${postId}`) || document.getElementById(`post-${postId}`);
         parentContainer.appendChild(replyForm);
+        
+        replyForm.querySelector('.submitReply').onclick = async (event) => await submitReply(event, postId, replyForm);
+        replyForm.querySelector('.cancelReply').onclick = () => closeReplyForm(replyForm);
     }
-    replyForm.style.display = 'block';
-    replyForm.querySelector('.replyInput').focus();
-}
+
+    replyForm.style.display = 'block'; // Show the form
+    replyForm.querySelector('.replyInput').focus(); // Focus on the input field
+}    
 
 
-async function submitReply(event, parentId) {
+
+async function submitReply(event, parentId, formElement) {
     event.preventDefault();
     if (!auth.currentUser) {
         alert("Please log in to reply.");
         return;
     }
 
-    const form = event.currentTarget;
-    const replyContent = form.querySelector('.replyInput').value; // Adjusted to target class
+    const replyContent = formElement.querySelector('.replyInput').value;
+    
+    if (replyContent.trim() === "") {
+        alert("Reply cannot be empty.");
+        return;
+    }
 
     try {
         await addDoc(collection(db, "messages"), {
@@ -167,15 +177,23 @@ async function submitReply(event, parentId) {
             parentId: parentId,
             userName: auth.currentUser.displayName,
             userProfilePic: auth.currentUser.photoURL || 'default_profile_pic_url.jpg',
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp(),
         });
         console.log("Reply successfully added!");
-        form.reset();
-        await fetchReplies(parentId); // Refresh to show the new reply
+        formElement.reset();
+        formElement.style.display = 'none'; // Hide the form after successful submission
+        await fetchReplies(parentId);
     } catch (error) {
         console.error("Error submitting reply: ", error);
     }
 }
+
+
+function closeReplyForm(formElement) {
+    formElement.style.display = 'none'; // Hide the form
+    formElement.reset(); // Optional: Clear the input field
+}
+
 
 
 async function postForum(event) {
@@ -207,8 +225,6 @@ async function postForum(event) {
         alert("Failed to post the thread.");
     }
 }
-
-document.getElementById('createForumForm')?.addEventListener('submit', postForum);
 
 
 // Example signIn function
@@ -249,7 +265,7 @@ function formatDate(timestamp) {
     if (secondsAgo < 60) {
         return 'just now';
     } else if (minutesAgo < 60) {
-        return `${minutesAgo} min ago`;
+        return `${minutesAgo} mins. ago`;
     } else if (hoursAgo < 24) {
         return `${hoursAgo} hours ago`;
     } else if (daysAgo < 7) {
