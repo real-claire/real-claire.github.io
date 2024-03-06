@@ -34,13 +34,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         fetchForums();
     });
 
-    document.addEventListener('click', function(event) {
-        if (event.target.matches('.replyButton')) {
-            const postId = event.target.getAttribute('data-postId');
-            displayReplyForm(postId);
-        }
-    });
-
     // Check if sortOrderSelect exists before adding event listener
     const sortOrderSelect = document.getElementById('sortOrderSelect');
     if (sortOrderSelect) {
@@ -55,15 +48,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('authButton').addEventListener('click', signIn);
 
     document.addEventListener('click', function(event) {
-        if (event.target.matches('.commentButton')) {
+        if (event.target.matches('.replyButton')) {
+            // Existing logic to handle reply button clicks
+            const postId = event.target.getAttribute('data-postId');
+            displayReplyForm(postId);
+        } else if (event.target.matches('.commentButton')) {
+            // Logic for handling comment button clicks
+            // This should include fetching the text area value, submitting the reply, and clearing the input
             const postId = event.target.getAttribute('data-postId');
             const replyContent = event.target.previousElementSibling.value; // Assuming the text area is directly before the button
             if (replyContent.trim()) {
-                submitReplyToThread(postId, replyContent);
+                submitReplyToThread(postId, replyContent, event.target);
             }
         }
     });
-    
 });
 
 async function fetchForums(sortOrder = 'desc') {
@@ -238,10 +236,11 @@ async function submitReplyToThread(postId, replyContent) {
         console.log("Reply to thread successfully added!");
         // Clear the input field after posting
         document.querySelector(`[data-postId="${postId}"]`).previousElementSibling.value = '';
-        // Optionally, refresh replies to show the new reply
+        fetchReplies(postId);
     } catch (error) {
         console.error("Error submitting reply to thread: ", error);
     }
+
 }
 
 function closeReplyForm(form) {
