@@ -33,22 +33,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Fetch forums to refresh the UI based on auth state
         fetchForums();
     });
-    
-    document.getElementById('authButton').addEventListener('click', signIn);
-});
 
-document.addEventListener('click', function(event) {
-    if (event.target.matches('.replyButton')) {
-        const postId = event.target.getAttribute('data-postId');
-        displayReplyForm(postId);
+    document.addEventListener('click', function(event) {
+        if (event.target.matches('.replyButton')) {
+            const postId = event.target.getAttribute('data-postId');
+            displayReplyForm(postId);
+        }
+    });
+
+    // Check if sortOrderSelect exists before adding event listener
+    const sortOrderSelect = document.getElementById('sortOrderSelect');
+    if (sortOrderSelect) {
+        sortOrderSelect.addEventListener('change', function() {
+            const selectedSortOrder = this.value;
+            fetchForums(selectedSortOrder); // Fetch forums with the selected sort order
+        });
+    } else {
+        console.error('sortOrderSelect element not found.');
     }
-});
 
-document.getElementById('createForumForm')?.addEventListener('submit', postForum);
+    document.getElementById('authButton').addEventListener('click', signIn);
 
-document.getElementById('sortOrderSelect').addEventListener('change', function() {
-    const selectedSortOrder = this.value;
-    fetchForums(selectedSortOrder); // Fetch forums with the selected sort order
+    document.addEventListener('click', function(event) {
+        if (event.target.matches('.commentButton')) {
+            const postId = event.target.getAttribute('data-postId');
+            const replyContent = event.target.previousElementSibling.value; // Assuming the text area is directly before the button
+            if (replyContent.trim()) {
+                submitReplyToThread(postId, replyContent);
+            }
+        }
+    });
+    
 });
 
 async function fetchForums(sortOrder = 'desc') {
@@ -71,6 +86,12 @@ async function fetchForums(sortOrder = 'desc') {
             // Assign an ID to each forum post container for later reference
             const postId = `post-${doc.id}`;
             const messageElement = document.createElement('div');
+            const replyBoxHTML = auth.currentUser ? `
+                <div class="replyBox">
+                    <textarea class="replyInput" placeholder="Your reply..." required></textarea>
+                    <button class="commentButton" data-postId="${doc.id}">Comment</button>
+                </div>
+            ` : '';
             messageElement.setAttribute('id', postId); // Important for associating replies
             messageElement.innerHTML = `
                 <div>
@@ -81,8 +102,10 @@ async function fetchForums(sortOrder = 'desc') {
                     <h2 class="thread-title">${message.title}</h2>
                     <p>${message.content}</p>
                     <p class="line"></p>
+                    <p>${replyBoxHTML}</p>
                     </div>
                 </div>
+                
                 <div class="replies" id="replies-${doc.id}"></div> <!-- Container for replies -->
             `;
             forumsContainer.appendChild(messageElement);
@@ -200,6 +223,26 @@ async function submitReply(event, parentId, form) {
         console.error("Error submitting reply: ", error);
     }
 }
+
+async function submitReplyToThread(postId, replyContent) {
+    try {
+        await addDoc(collection(db, "messages"), {
+            content: replyContent,
+            parentId: postId,
+            userName: auth.currentUser.displayName,
+            userProfilePic: auth.currentUser.photoURL || 'default_avatar.png',
+            createdAt: serverTimestamp(),
+        });
+        console.log("Reply to thread successfully added!");
+        // Clear the input field after posting
+        document.querySelector(`[data-postId="${postId}"]`).previousElementSibling.value = '';
+        // Optionally, refresh replies to show the new reply
+        fetchReplies(postId);
+    } catch (error) {
+        console.error("Error submitting reply to thread: ", error);
+    }
+}
+
 
 
 
