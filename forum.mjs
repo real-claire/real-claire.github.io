@@ -178,11 +178,11 @@ function displayReplyForm(postId, level = 0) {
             </form>
         `;
     
-        let parentContainer = document.getElementById(`replies-${parentId}`) || document.getElementById(`post-${parentId}`);
+        let parentContainer = document.getElementById(`replies-${postId}`) || document.getElementById(`post-${postId}`);
         parentContainer.appendChild(formContainer);
         
         const form = formContainer.querySelector('form'); // Correctly target the <form> for event handling
-        form.onsubmit = async (event) => await submitReply(event, parentId, form); // Pass the form to submitReply
+        form.onsubmit = async (event) => await submitReply(event, postId, form); // Pass the form to submitReply
         formContainer.querySelector('.cancelReply').onclick = () => closeReplyForm(form); // Adjust to pass the form to closeReplyForm
     }
 
