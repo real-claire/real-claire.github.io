@@ -46,14 +46,25 @@ document.addEventListener('click', function(event) {
 
 document.getElementById('createForumForm')?.addEventListener('submit', postForum);
 
+document.getElementById('sortOrderSelect').addEventListener('change', function() {
+    const selectedSortOrder = this.value;
+    fetchForums(selectedSortOrder); // Fetch forums with the selected sort order
+});
 
-async function fetchForums() {
+async function fetchForums(sortOrder = 'desc') {
     const forumsContainer = document.getElementById('forumsList');
     forumsContainer.innerHTML = ''; // Clear existing content
 
     try {
-        const forumsQuery = query(collection(db, "messages"), where("parentId", "==", null), orderBy("createdAt"));
+        let forumsQuery = query(collection(db, "messages"), 
+                            where("parentId", "==", null), 
+                            orderBy("createdAt", sortOrder));        
         const querySnapshot = await getDocs(forumsQuery);
+
+        if (querySnapshot.empty) {
+            forumsContainer.innerHTML = '<p>No threads to display.</p>';
+            return;
+        }
 
         querySnapshot.forEach(doc => {
             const message = doc.data();
@@ -81,6 +92,7 @@ async function fetchForums() {
         });
     } catch (error) {
         console.error("Error fetching forums: ", error);
+        forumsContainer.innerHTML = '<p>oops, i may have messed up the code</p>';
     }
 }
 

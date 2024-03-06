@@ -15,7 +15,14 @@
         </div>
     </header>
     <h1>the REAL forum</h1>
-
+    <div class="sort-options">
+        <label for="sortOrder">Sort by:</label>
+        <select id="sortOrder">
+            <option value="asc">Oldest First</option>
+            <option value="desc" selected>Newest First</option>
+        </select>
+    </div>
+    
     <main>
         <section id="forumSection">
             <form id="createForumForm" style="display:none;" onsubmit="postForum(event);">
