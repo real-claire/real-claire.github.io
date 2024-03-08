@@ -1,18 +1,102 @@
+/* I do not know how to do this better, if you have any suggestions
+   please let me know in the forums :) */
+@keyframes rainbow{
+	from, to { box-shadow: 0 0 15px 0 red }
+	16% { box-shadow: 0 0 15px 0  yellow }
+	32% { box-shadow: 0 0 15px 0  green }
+	48% { box-shadow: 0 0 15px 0  aqua }
+	64% { box-shadow: 0 0 15px 0  blue }
+	80% { box-shadow: 0 0 15px 0  fuchsia }
+}
+
+@keyframes rainbow_border-left{
+	from, to { border-left: 4px solid red }
+	16% { border-left: 4px solid  yellow }
+	32% { border-left: 4px solid  green }
+	48% { border-left: 4px solid  aqua }
+	64% { border-left: 4px solid  blue }
+	80% { border-left: 4px solid  fuchsia }
+}
+
+
+@keyframes rainbowText{
+	from, to { color: red }
+	16% { color:  yellow }
+	32% { color:  green }
+	48% { color:  aqua }
+	64% { color:  blue }
+	80% { color:  fuchsia }
+}
+
+video {
+    object-fit: cover;
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -100;
+}
+
 body, html {
-    font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
-    margin: 0;
-    padding: 20px;
+    font-family: "Trebuchet MS";
+    background-color: #232323c2;    
+    padding: 5%;
+    border-radius: 5px;
+    max-width: 100%;
+    position: relative;
+    animation: rainbow 10s infinite;
+    margin-left: 5%;
+    margin-right: 15%;
+    margin-bottom: 10%;
+    margin-top: 1%;
+    width: 65vw;
 }
 
 header {
-    background-color: #b39783;
+    background-color: #2c2f33d6;
+    animation: rainbow 10s infinite;
     color: white;
     padding: 10px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-radius: 5px;
+}
+
+h1 {
+    color: rgb(228, 199, 230);
+}
+
+i{
+    animation: rainbowText 10s infinite;
+    
+}
+
+a{
+    animation: rainbowText 10s infinite;
+}
+
+span {
+    color: rgb(241, 227, 242);
+    font-weight: bold;
+    font-size: large;
+}
+
+span:hover {
+    animation: rainbowText 3s infinite;
+}
+
+button {
+    background-color: #2c2f33d6;
+    padding: 1%;
+    padding-left: 2.5cap;
+    padding-right: 2.5cap;
+    color: #eeeeeed4;
+}
+
+button:hover {
+    animation: rainbowText 2s infinite;
 }
 
 .user-info {
@@ -22,22 +106,24 @@ header {
     cursor: pointer;
 }
 
-.user-details {
-    display: flex;
-    align-items: center;
+
+.userDropdown > ul {
+    font-family:'FontAwesome';
+    content:"\f078";
+    padding-left: 5px;
 }
 
-.userPic {
-    border-radius: 50%;
-    margin-right: 10px;
+.userDropdown > ul > li {
+    background-color: #2c2f33d6;
+    padding: 65cap;
 }
 
 .dropdown-content {
     display: none;
     position: absolute;
-    background-color: #f9f9f9;
     min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    animation: rainbow 3s infinite;
+    background-color: #2c2f33d6;
     z-index: 1;
     right: 0;
     top: 50px;
@@ -52,23 +138,82 @@ header {
     text-align: left;
 }
 
+.user-details {
+    display: flex;
+    align-items: center;
+    margin-right: 2cap;
+}
+
+.userPic {
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.createForumForm button {
+    padding: 0.5cap;
+    margin: 1cap;
+    margin-left: 0cap;
+    margin-bottom: 1.5cap;
+}
+
+.login-warning {
+    display: none;
+    filter: grayscale(100);
+    animation: rainbow 10s infinite;
+    background-color: rgba(255, 109, 109, 0.613);
+    margin-bottom: 1.75cap;
+    padding: 0.005cap;
+    border-radius: 5px;
+}
+
+.login-warning > p {
+    display: flex;
+    padding-top: 0.25cap;
+    color: rgb(241, 227, 242);
+    text-indent: 1.5cap;
+}
+
+
+.sort-options {
+    margin-bottom: 1cap;
+}
+
+.sort-options > label {  
+    color: #eeeeeed4;
+}
+
+.sort-options > select, .signOutButton > select {
+    padding: 1%;
+    background-color: #232323d4;
+    color: #eeeeeed4;
+    border-width: 0px;
+    border-radius: 5px;
+}
+
+.sortOrderSelect > option, .signOutButton > option {
+    padding: 5%;
+    border-radius: 0px;
+}
+
+
 
 small {
     display: block;
     margin-top: 2px;
-    color: #666;
+    color: #eeeeeed4;
 }
 
 #forumsList > div {
-    background-color: white;
+    background-color: #2c2f33d6;
     padding: 10px;
     margin-bottom: 10px;
     border-radius: 5px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    animation: rainbow 10s infinite;
 }
 
 .text-container {
     display: flex;
+    color: #eeeeeed4;
     padding-left: 5.5cap;
     margin-top: -4.25cap;
     flex-direction: column;
@@ -94,9 +239,11 @@ small {
 .thread-title {
     margin-top: 1cap;
     margin-bottom: 0.5cap;
+    color: rgb(228, 199, 230);
 }
 
 #commentText {
+    color: rgb(241, 227, 242);
     padding: 10px;
     margin-bottom: 8px;
     border-radius: 4px;
@@ -110,41 +257,74 @@ small {
     padding: 5px 15px;
     border: none;
     background-color: #007bff;
-    color: white;
+    color: #eeeeeed4;
     cursor: pointer;
     border-radius: 4px;
 }
 
 .comment-as {
+    color: #eeeeeed4;
     position: relative;
     display: flex;
     flex-direction: column;
 }
 
 .line {
-    border-bottom: 1px solid #888;
+    border-bottom: 1px solid rgb(241, 227, 242);
+    margin-bottom: 0cap;
 }
 
 .replies {
-    margin-left: 4cap;
+    margin-left: 3.65cap;
 }
 
+/*  */
 .reply {
-    border-left: 4px solid #7b685a;
-    padding-left: 16px;
-    padding-bottom: 1cap;
+    color: rgb(241, 227, 242);
+    border-left: 2px solid rgb(241, 227, 242);
+    padding-left: 2.5cap;
+    padding-bottom: 1.5cap;
+}
+
+.reply > p {
+    color: #eeeeeed4;
+    margin-bottom: 1cap;
+    margin-left: 2.25cap;
+    font-size: 115%;
+}
+
+.replyBox {
+    color: #2c2f33;
+    margin-top: -2cap;
+    margin-bottom: -3cap;
+}
+
+.replyInput {
+    width: calc(100% - 18px);
+    height: calc(5cap);
+    resize: vertical;
+    background-color: #2c2f33;
+    color: #eeeeeed4;
+
 }
 
 .replyButton {
-    margin-bottom: 0.5cap;
+    font-size: 1cap;
+    padding-left: 7cap;
 }
 
-.nestedReply h3 {
+.nestedReply {
+    margin-left: -1cap;
+}
+
+.nestedReply > h3 {
     margin-top: -2.25cap;
     margin-left: 3cap;
+    font-weight: 100;
 }
 
-.nestedReply small {
+.nestedReply > small {
+    color: #eeeeeed4;
     margin-top: -3.75cap;
     margin-left: 10cap;
 }
@@ -153,7 +333,8 @@ input[type="text"], input[type="submit"] {
     padding: 8px;
     margin: 5px 0;
     border-radius: 4px;
-    border: 1px solid #ddd;
+    background-color: #2c2f33;
+    color: #eeeeeed4;
     width: calc(100% - 18px);
 }
 

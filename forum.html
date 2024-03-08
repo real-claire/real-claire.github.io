@@ -1,48 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <title>Claire's REAL Forum</title>
     <meta charset="UTF-8">
-    <title>Forum</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="forum.css">
+    <link rel="stylesheet" href="header.js">
+    <link rel="icon" type="image/x-icon" href="assets/img.jpg">
     <script type="module" src="forum.mjs" defer></script>
+    <script src="header.js" defer></script>
 </head>
 <body> 
+    <header-component></header-component>
+
+    <video playsinline autoplay muted loop id="bgvid">
+        <source src="assets/bgVid.mp4" type="video/mp4">
+    </video>
     <header>
         <div class="header-content">
-            <h3>the REAL forum</h3>
+            <h1> The <i>REAL</i> Forum</h1>
         </div>
         <div id="userInfo" style="display:none;" class="user-info">
-            <div class="user-details" onclick="toggleDropdown()">
+            <div class="user-details" onclick="toggleDropdown(event)">
                 <img id="userPic" src="" alt="User profile picture" class="userPic">
                 <span id="userName"></span>
             </div>
-            <!-- Dropdown Content Container for "Log Out" -->
-            <div id="userDropdown" class="dropdown-content">
-                <button id="signOutButton">Log Out</button>
+            <div id="userDropdown" style="display: none;">
+                <ul style="list-style-type: none;">
+                    <li><button data-action="logout">Log Out</button></li>
+                </ul>
             </div>
+            
         </div>
         <button id="authButton">Sign In</button>
-    </header><br>
-    
-    <div class="sort-options">
-        <label for="sortOrder">Sort by:</label>
-        <select id="sortOrderSelect">
-            <option value="asc">Oldest First</option>
-            <option value="desc" selected>Newest First</option>
-        </select>
+    </header><br> 
+    <div class="login-warning">
+        <p>Sign In to post threads and replies.</p>
     </div>
-    <br>
-    <main>
-        <section id="forumSection">
-            <form id="createForumForm" style="display:none;" onsubmit="postForum(event);">
-                <input type="text" id="title" placeholder="Thread Title" required>
-                <input type="text" id="content" placeholder="Write something..." required>
-                <button type="submit">Post Thread</button><br>
-            </form>
-            <div id="forumsList">
-                <!-- Threads and replies will be dynamically inserted here -->
-            </div>
-        </section>
-    </main>
+    <section id="forumSection" class="createForumForm">
+        <form id="createForumForm" style="display:none;" onsubmit="postForum(event);">
+            <input type="text" id="title" placeholder="Thread Title" required>
+            <input type="text" id="content" placeholder="Write something..." required>
+            <button type="submit">Post Thread</button>
+        </form>
+        <div class="sort-options">
+            <label for="sortOrder">Sort by:</label>
+            <select id="sortOrderSelect">
+                <option value="asc">Oldest First</option>
+                <option value="desc" selected>Newest First</option>
+            </select>
+        </div>
+        <div id="forumsList">
+            <!-- Threads and replies will be dynamically inserted here -->
+        </div>
+    </section>
+
 </body>
 </html>

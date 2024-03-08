@@ -15,20 +15,44 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+var mockUser = {
+    displayName: "Claire",
+    photoURL: "img.jpg"
+};
+
+const useMockAuth = false;
+var mockSignedIn = false;
+
 document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('createForumForm').style.display = 'none';
     document.getElementById('createForumForm').addEventListener('submit', postForum);
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
+    if (useMockAuth)
+    {
+        if (mockSignedIn) {
+            document.querySelector(".login-warning").style.display = 'none';
             document.getElementById('createForumForm').style.display = 'block';
             document.querySelectorAll('.replyButton').forEach(el => el.style.display = 'inline-block');
         } else {
+            document.querySelector(".login-warning").style.display = 'block';
             document.getElementById('createForumForm').style.display = 'none';
             document.querySelectorAll('.replyButton').forEach(el => el.style.display = 'none');
         }
         fetchForums();
-    });
+    } else {
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.querySelector(".login-warning").style.display = 'none';
+                document.getElementById('createForumForm').style.display = 'block';
+                document.querySelectorAll('.replyButton').forEach(el => el.style.display = 'inline-block');
+            } else {
+                document.querySelector(".login-warning").style.display = 'block';
+                document.getElementById('createForumForm').style.display = 'none';
+                document.querySelectorAll('.replyButton').forEach(el => el.style.display = 'none');
+                fetchForums();
+            }
+        });
+    }
 
     const sortOrderSelect = document.getElementById('sortOrderSelect');
     if (sortOrderSelect) {
@@ -39,8 +63,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
         console.error('sortOrderSelect element not found.');
     }
-
-    document.getElementById('authButton').addEventListener('click', signIn);
 
     document.addEventListener('click', function(event) {
         if (event.target.matches('.replyButton')) {
@@ -55,24 +77,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Event listener for sign-in button
     document.getElementById("authButton").addEventListener("click", signIn);
 
-    // Event listener for sign-out button within the dropdown
-    document.getElementById("signOutButton").addEventListener("click", signOutUser);
+    document.querySelector('.user-details').addEventListener('click', toggleDropdown);
 
-    // Dropdown toggle logic (same as provided in the previous message)
-    document.getElementById("userInfo").addEventListener("click", function() {
-        document.getElementById("userDropdown").style.display = "block";
-    });
-
-    // Close the dropdown if the user clicks outside of it
     window.onclick = function(event) {
-        if (!event.target.matches('#userInfo, #userInfo *')) {
+        const userDropdown = document.getElementById('userDropdown'); // Ensure this is defined
+        if (!event.target.matches('#userInfo, #userInfo *, .user-details')) {
             userDropdown.style.display = 'none';
         }
     };
+
+    document.getElementById('userDropdown').addEventListener('click', function(event) {
+        // Check if the clicked element is a button with a data-action attribute
+        if (event.target.tagName === 'BUTTON' && event.target.dataset.action) {
+            const action = event.target.dataset.action;
+            
+            switch (action) {
+                case 'logout':
+                    signOutUser();
+                    break;
+                // Add cases for other actions as you add more buttons
+                default:
+                    console.log('Action not recognized:', action);
+            }
+        }
+    });
 });
+
+
 
 async function fetchForums(sortOrder = 'desc') {
     const forumsContainer = document.getElementById('forumsList');
@@ -93,7 +126,7 @@ async function fetchForums(sortOrder = 'desc') {
             const message = doc.data();
             const postId = `post-${doc.id}`;
             const messageElement = document.createElement('div');
-            const replyBoxHTML = auth.currentUser ? `
+            const replyBoxHTML = auth.currentUser || mockSignedIn ? `
                 <div class="replyBox">
                     <textarea class="replyInput" placeholder="Your reply..." required></textarea>
                     <button class="commentButton" data-postId="${doc.id}">Comment</button>
@@ -152,13 +185,12 @@ async function fetchReplies(parentId, level = 0) {
                 <small>· ${formatDate(reply.createdAt)}</small>
             </div>
                 <p>${reply.content}</p>
-
-                ${auth.currentUser ? `<button class='replyButton' data-postId='${doc.id}'>Reply</button>` : ''}
+                ${auth.currentUser || mockSignedIn  ? `<button class='replyButton' data-postId='${doc.id}'>Reply</button>` : ''}
                 <div id="replies-${doc.id}"></div>
             `;
+                          
             repliesContainer.appendChild(replyElement);
 
-            // Recursively fetch further nested replies
             fetchReplies(doc.id, level + 1);
         });
     } catch (error) {
@@ -166,7 +198,25 @@ async function fetchReplies(parentId, level = 0) {
     }
 }
 
+let currentOpenFormId = null;
+
 function displayReplyForm(postId, level = 0) {
+    if (currentOpenFormId && currentOpenFormId !== postId) {
+        const currentlyOpenForm = document.getElementById(`replyForm-${currentOpenFormId}`);
+        if (currentlyOpenForm) {
+            currentlyOpenForm.style.display = 'none';
+            const formToReset = currentlyOpenForm.querySelector('form');
+            if (formToReset) {
+                formToReset.reset();
+            }
+            const currentOpenReplyButton = document.querySelector(`[data-postId="${currentOpenFormId}"].replyButton`);
+            if (currentOpenReplyButton) {
+                currentOpenReplyButton.style.display = '';
+            }
+        }
+    }
+
+    const replyButton = document.querySelector(`[data-postId="${postId}"].replyButton`);
     const replyFormId = `replyForm-${postId}`;
     let replyForm = document.getElementById(replyFormId);
 
@@ -186,23 +236,54 @@ function displayReplyForm(postId, level = 0) {
     
         let parentContainer = document.getElementById(`replies-${postId}`) || document.getElementById(`post-${postId}`);
         parentContainer.appendChild(formContainer);
-        
-        formContainer.style.display = 'block';
-        formContainer.querySelector('.replyInput').focus();
-        formContainer.querySelector('.cancelReply').onclick = () => closeReplyForm(form);
 
         const form = formContainer.querySelector('form');
-        form.onsubmit = async (event) => await submitReply(event, postId, form);
-        form.reset();
+        form.onsubmit = async (event) => {
+            event.preventDefault();
+            await submitReply(event, postId, form);
+            // Reveal the reply button when the reply is submitted
+            replyButton.style.display = '';
+        };
+
+        formContainer.querySelector('.cancelReply').onclick = () => {
+            closeReplyForm(formContainer);
+            // Reveal the reply button when the form is canceled
+            replyButton.style.display = '';
+        };
+
+        formContainer.style.display = 'block';
+        formContainer.querySelector('.replyInput').focus();
     } else {
         replyForm.style.display = 'block';
         replyForm.querySelector('.replyInput').focus();
     }
-}    
+
+    currentOpenFormId = postId;
+
+    // Hide the reply button that was clicked
+    replyButton.style.display = 'none';
+}
+
 
 function closeReplyForm(form) {
     form.style.display = 'none';
-    form.reset();
+    form.querySelector('form').reset();
+
+    // Find the postId of the form being closed
+    const postIdMatch = form.id.match(/replyForm-(.*)/);
+    if (postIdMatch) {
+        const postId = postIdMatch[1];
+        // Reset currentOpenFormId if this is the form that was open
+        if (postId === currentOpenFormId) {
+            currentOpenFormId = null;
+        }
+
+        // Make the reply button visible again
+        const replyButton = document.querySelector(`[data-postId="${postId}"].replyButton`);
+        if (replyButton) {
+            replyButton.style.display = '';
+        }
+    }
 }
 
 async function submitReply(event, parentId, form) {
@@ -287,14 +368,28 @@ async function postForum(event) {
 }
 
 function signIn() {
+    if (useMockAuth === true) {
+        document.getElementById('createForumForm').style.display = 'block';
+        document.querySelectorAll('.replyButton').forEach(el => el.style.display = 'inline-block');
+        document.getElementById("userInfo").style.display = "flex";
+        document.getElementById("authButton").style.display = "none";
+        document.getElementById("userPic").src = "img.jpg" || 'default_avatar.png';
+        document.getElementById("userName").textContent = "Claire";
+        document.querySelector(".login-warning").style.display = 'none';
+        mockSignedIn = true;
+        fetchForums();
+        return;
+    }
     const provider = new GoogleAuthProvider();
     signInWithPopup(auth, provider)
         .then((result) => {
             console.log("User signed in");
             document.getElementById("userInfo").style.display = "flex";
             document.getElementById("authButton").style.display = "none";
+            document.getElementById('createForumForm').style.display = 'block';
             document.getElementById("userPic").src = result.user.photoURL || 'default_avatar.png';
-            document.getElementById("userName").textContent = result.user.displayName;
+            document.getElementById("userName").textContent = `${result.user.displayName}`;
+            document.querySelector(".login-warning").style.display = 'none';
         })
         .catch((error) => {
             console.error("Error signing in: ", error);
@@ -303,10 +398,25 @@ function signIn() {
 }
 
 function signOutUser() {
+    document.getElementById("userDropdown").style.display = 'none';
+
+    if (useMockAuth === true) {
+        document.getElementById("userInfo").style.display = "none";
+        document.getElementById("authButton").style.display = "block";
+        document.getElementById('createForumForm').style.display = 'none';
+        document.querySelector(".login-warning").style.display = 'block';
+        document.querySelectorAll('.replyButton').forEach(el => el.style.display = 'none');
+        mockSignedIn = false;
+        fetchForums();
+        return;
+    }
+
     signOut(auth).then(() => {
         console.log("User signed out successfully");
         document.getElementById("userInfo").style.display = "none";
         document.getElementById("authButton").style.display = "block";
+        document.getElementById('createForumForm').style.display = 'block';
+        document.querySelector(".login-warning").style.display = 'block';
     }).catch((error) => {
         console.error("Error signing out: ", error);
         alert("Failed to sign out.");
@@ -337,9 +447,12 @@ function formatDate(timestamp) {
     return 'just now';
 }
 
-function toggleDropdown() {
+function toggleDropdown(event) {
     const userDropdown = document.getElementById('userDropdown');
-    userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block';
+    const isVisible = userDropdown.style.display === 'block';
+    userDropdown.style.display = isVisible ? 'none' : 'block';
+
+    event.stopPropagation();
 }
 
 onAuthStateChanged(auth, (user) => {
@@ -348,11 +461,12 @@ onAuthStateChanged(auth, (user) => {
 
     if (user) {
         document.getElementById('userPic').src = user.photoURL || 'default_avatar.png';
-        document.getElementById('userName').textContent = `Hello, ${user.displayName.split(' ')[0]}`;
-        
+        document.getElementById('userName').textContent = `${user.displayName.split(' ')[0]}`;
+        document.querySelector(".login-warning").style.display = 'none';
         userInfo.style.display = 'flex';
         authButton.style.display = 'none';
     } else {
+        document.querySelector(".login-warning").style.display = 'block';
         userInfo.style.display = 'none';
         authButton.style.display = 'block';
     }

@@ -15,6 +15,7 @@
 	64% { color:  blue }
 	80% { color:  fuchsia }
 }
+
 video {
   object-fit: cover;
   width: 100vw;
