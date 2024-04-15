@@ -98,7 +98,9 @@ class HeaderComponent extends HTMLElement {
             <nav class="nav-bar">
                 <ul class="nav-links">
                     <li><a href="index.html">Home</a></li>
+                    <li><a href="music.html">Music</a></li>
                     <li><a href="forum.html">Forums</a></li>
+                    <li><a href="privacy.html">Privacy</a></li>
                 </ul>
             </nav>
         </div>
@@ -107,6 +109,6 @@ class HeaderComponent extends HTMLElement {
 }
 // --------TODO------------(add these!!)
 // <li><a href="games.html">Games</a></li>
-// <li><a href="music.html">Music</a></li>
+// 
 // <li><a href="blog.html">Blog</a></li>
 window.customElements.define('header-component', HeaderComponent);
