@@ -4,7 +4,7 @@ exports.handler = async (event, context) => {
     const oauth2Client = new google.auth.OAuth2(
         process.env.CLIENT_ID,
         process.env.CLIENT_SECRET,
-        `${process.env.URL}/.netlify/functions/callback` // Adjust this for Vercel or local development
+        `${process.env.VERCEL_URL}/api/callback`
     );
 
     const {tokens} = await oauth2Client.getToken(event.queryStringParameters.code);
