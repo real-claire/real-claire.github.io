@@ -336,3 +336,13 @@ input[type="submit"] {
 input[type="submit"]:hover {
     background-color: #b39783;
 }
+
+.edited-tag {
+    font-size: 0.4em; /* Smaller font size */
+    color: #888; /* Darker gray color */
+}
+
+.deleted-tag {
+    font-size: 0.4em; /* Smaller font size */
+    color: #888; /* Darker gray color */
+}

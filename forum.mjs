@@ -77,12 +77,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 submitReplyToThread(postId, replyContent, event.target);
             }
         }
+    });
 
+    document.addEventListener('click', (event) => {
         if (event.target.matches('.deleteButton')) { // When a delete button is clicked
-            const postId = event.target.getAttribute('data-postId');
-            deleteMessage(postId); // Call the function to delete the message
-        } 
-        
+            const postId = event.target.getAttribute('data-postId'); // Get the post ID
+            deleteMessage(postId); // Call delete function
+        }
+
         if (event.target.matches('.editButton')) { // When an edit button is clicked
             const postId = event.target.getAttribute('data-postId');
             displayEditForm(postId); // Call the function to show the edit form
@@ -138,13 +140,15 @@ async function fetchForums(sortOrder = 'desc') {
             const message = doc.data();
 
             const isUserAuthor = auth.currentUser && message.userName === auth.currentUser.displayName; // Check if current user is the author
+            const isDeleted = message.userName === "[deleted]"; // Check if the message is deleted
+            
             const deleteButtonHTML = isUserAuthor ? `<button class="deleteButton" data-postId="${doc.id}">Delete</button>` : ''; // Conditional delete button
             const editButtonHTML = isUserAuthor ? `<button class="editButton" data-postId="${doc.id}">Edit</button>` : ''; // Conditional edit button
 
             const postId = `post-${doc.id}`;
             const messageElement = document.createElement('div');
 
-            const replyBoxHTML = auth.currentUser || mockSignedIn ? `
+            const replyBoxHTML = (auth.currentUser || mockSignedIn) && !isDeleted ? `
                 <div class="replyBox">
                     <textarea class="replyInput" placeholder="Your reply..." required></textarea>
                     <button class="commentButton" data-postId="${doc.id}">Comment</button>
@@ -153,7 +157,7 @@ async function fetchForums(sortOrder = 'desc') {
             messageElement.setAttribute('id', postId);
             messageElement.innerHTML = `
                 <div>
-                    <img src="${message.userProfilePic || 'default_avatar.png'}" alt="User profile picture" class="user-pic">
+                    <img src="${message.userProfilePic || ''}" alt="User profile picture" class="user-pic">
                     <div class="text-container">
                         <span>${message.userName.split(' ')[0]}</span> <!-- First name -->
                         <small>${formatDate(message.createdAt)}</small>
@@ -194,22 +198,21 @@ async function fetchReplies(parentId, level = 0) {
         const querySnapshot = await getDocs(repliesQuery);
         querySnapshot.forEach(doc => {
             const reply = doc.data();
+            const isDeleted = reply.userName === "[deleted]";
 
             const isUserAuthor = auth.currentUser && reply.userName === auth.currentUser.displayName; // Check if current user is the author
-            const deleteButtonHTML = isUserAuthor ? `<button class="deleteButton" data-postId="${doc.id}">Delete</button>` : ''; // Conditional delete button
-            const editButtonHTML = isUserAuthor ? `<button class="editButton" data-postId="${doc.id}">Edit</button>` : ''; // Conditional edit button
-
+          
             const replyElement = document.createElement('div');
             replyElement.classList.add('reply');
             replyElement.style.marginLeft = `${level + 20}px`;
             replyElement.innerHTML = `
             <div class="nestedReply">
-                <img src="${reply.userProfilePic || 'default_avatar.png'}" alt="User profile picture" class="user-pic">
-                <h3 display:inline-block>${reply.userName.split(' ')[0]}</h3>
+                <img src="${reply.userProfilePic || ''}" alt="User profile picture" class="user-pic">
+                <h3>${isDeleted ? "[deleted]" : reply.userName.split(' ')[0]}</h3> <!-- Show deleted if marked as such -->
                 <small>· ${formatDate(reply.createdAt)}</small>
             </div>
-                <p>${reply.content}</p>
-                <p>${auth.currentUser || mockSignedIn  ? `<button class='replyButton' data-postId='${doc.id}'>Reply</button>` : ''}${editButtonHTML}${deleteButtonHTML}</p>
+                <p>${isDeleted ? "[deleted]" : reply.content}</p> <!-- Show deleted content -->
+                ${!auth.currentUser || !mockSignedIn || isDeleted ? '' : `<button class='replyButton' data-postId='${doc.id}'>Reply</button>`} <!-- Conditionally include reply button -->
                 <div id="replies-${doc.id}"></div>
             `;
                           
@@ -395,7 +398,7 @@ async function editMessage(postId, newContent) {
     try {
         const docRef = doc(db, "messages", postId);
         await updateDoc(docRef, {
-            content: `${newContent} (edited)`, // Append (edited) to the new content
+            content: `${newContent} <span class="edited-tag">(edited)</span>`, // Apply class to the edited text
         });
 
         fetchForums(); // Refresh the forums to reflect the edit
@@ -441,7 +444,8 @@ async function deleteMessage(postId) {
         const docRef = doc(db, "messages", postId);
         await updateDoc(docRef, {
             userName: "[deleted]",
-            content: "[deleted]",
+            content: `<span class="deleted-tag">[deleted]</span>`,
+            userProfilePic: null,
         });
 
         // Re-fetch forums to reflect the changes
@@ -471,14 +475,22 @@ function displayEditForm(postId) {
         </form>
     `;
 
-    const parentContainer = document.getElementById(`post-${postId}`) || document.getElementById(`replies-${postId}`);
-    parentContainer.appendChild(editForm);
+    // Position the edit form above the reply input box
+    const messageElement = document.getElementById(`post-${postId}`); // Get the message element
+    const replyBox = messageElement.querySelector('.replyBox'); // Get the reply box
+
+    // Insert the edit form before the reply box
+    if (replyBox) {
+        messageElement.insertBefore(editForm, replyBox);
+    } else {
+        messageElement.appendChild(editForm); // Default to appending at the end if no reply box is found
+    }
 
     const form = editForm.querySelector('form');
     form.onsubmit = async (event) => {
         event.preventDefault();
         const newContent = form.querySelector('.editInput').value;
-        await editMessage(postId, newContent);
+        await editMessage(postId, newContent); // Call the edit function
 
         // Hide the edit form after submitting
         editForm.style.display = 'none';
@@ -489,8 +501,8 @@ function displayEditForm(postId) {
     };
 
     // Pre-populate the text area with the existing content
-    const currentContent = parentContainer.querySelector('p').textContent;
-    editForm.querySelector('.editInput').value = currentContent.replace(" (edited)", ""); // Remove the "(edited)" suffix for the pre-populated content
+    const currentContent = messageElement.querySelector('p').textContent;
+    editForm.querySelector('.editInput').value = currentContent.replace(" (edited)", ""); // Remove "(edited)" if needed
 }
 
 
