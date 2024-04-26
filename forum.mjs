@@ -195,7 +195,7 @@ async function fetchReplies(parentId, level = 0) {
         querySnapshot.forEach(doc => {
             const reply = doc.data();
 
-            const isUserAuthor = auth.currentUser && message.userName === auth.currentUser.displayName; // Check if current user is the author
+            const isUserAuthor = auth.currentUser && reply.userName === auth.currentUser.displayName; // Check if current user is the author
             const deleteButtonHTML = isUserAuthor ? `<button class="deleteButton" data-postId="${doc.id}">Delete</button>` : ''; // Conditional delete button
             const editButtonHTML = isUserAuthor ? `<button class="editButton" data-postId="${doc.id}">Edit</button>` : ''; // Conditional edit button
 
