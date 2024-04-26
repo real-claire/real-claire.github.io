@@ -200,8 +200,11 @@ async function fetchReplies(parentId, level = 0) {
             const reply = doc.data();
             const isDeleted = reply.userName === "[deleted]";
 
-            const isUserAuthor = auth.currentUser && reply.userName === auth.currentUser.displayName; // Check if current user is the author
-          
+            const isUserAuthor = auth.currentUser && reply.userProfilePic === auth.currentUser.userProfilePic; // Check if current user is the author
+     
+            const deleteButtonHTML = isUserAuthor ? `<button class="deleteButton" data-postId="${doc.id}">Delete</button>` : ''; // Conditional delete button
+            const editButtonHTML = isUserAuthor ? `<button class="editButton" data-postId="${doc.id}">Edit</button>` : ''; // Conditional edit button
+     
             const replyElement = document.createElement('div');
             replyElement.classList.add('reply');
             replyElement.style.marginLeft = `${level + 20}px`;
@@ -211,8 +214,8 @@ async function fetchReplies(parentId, level = 0) {
                 <h3>${isDeleted ? "[deleted]" : reply.userName.split(' ')[0]}</h3> <!-- Show deleted if marked as such -->
                 <small>· ${formatDate(reply.createdAt)}</small>
             </div>
-                <p>${isDeleted ? "[deleted]" : reply.content}</p> <!-- Show deleted content -->
-                ${!auth.currentUser || !mockSignedIn || isDeleted ? '' : `<button class='replyButton' data-postId='${doc.id}'>Reply</button>`} <!-- Conditionally include reply button -->
+                <p>${isDeleted ? `<p class="deleted-tag">[deleted]</p>` : reply.content}</p> <!-- Show deleted content -->
+                ${(auth.currentUser || mockSignedIn) && !isDeleted ? `<button class='replyButton' data-postId='${doc.id}'>Reply</button>` : ''}                ${editButtonHTML} ${deleteButtonHTML}
                 <div id="replies-${doc.id}"></div>
             `;
                           
