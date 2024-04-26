@@ -500,33 +500,39 @@ function displayEditForm(postId) {
         </form>
     `;
 
-    const messageElement = document.getElementById(`post-${postId}`); // Ensure this is not null
+    const messageElement = document.getElementById(`post-${postId}`); // Ensure correct ID and structure
     if (messageElement) {
-        messageElement.appendChild(editForm); // Only append if the message element exists
+        messageElement.appendChild(editForm); // Only append if the element exists
     } else {
-        console.warn("Message element not found.");
+        console.warn("Message element not found. Check if the ID is correct."); // Warn if not found
+        return; // Stop if the element doesn't exist
     }
 
+    // Additional checks before accessing other elements
     const form = editForm.querySelector('form');
     if (form) {
         form.onsubmit = async (event) => {
             event.preventDefault();
-            const newContent = form.querySelector('.editInput').value;
-            await editMessage(postId, newContent); // Edit the message
-            editForm.style.display = 'none'; // Hide the form after submitting
+            const editInput = form.querySelector('.editInput'); // Ensure editInput is valid
+            if (editInput) {
+                const newContent = editInput.value;
+                await editMessage(postId, newContent); // Edit the message
+                editForm.style.display = 'none'; // Hide after editing
+            } else {
+                console.warn("Edit input not found.");
+            }
         };
 
         form.querySelector('.cancelEdit').onclick = () => {
-            editForm.style.display = 'none'; // Hide the form on cancel
+            editForm.style.display = 'none';
         };
     } else {
-        console.warn("Form element not found in the edit form.");
+        console.warn("Form element not found in edit form.");
     }
 
-    // Pre-fill the edit input box
-    const currentContentElement = messageElement ? messageElement.querySelector('p') : null;
+    const currentContentElement = messageElement.querySelector('p'); // Pre-fill the edit box
     if (currentContentElement) {
-        const currentContent = currentContentElement.textContent.replace(" (edited)", ""); // Handle null check
+        const currentContent = currentContentElement.textContent.replace(" (edited)", ""); // Handle null checks
         const editInput = editForm.querySelector('.editInput');
         if (editInput) {
             editInput.value = currentContent; // Pre-fill with existing content
@@ -537,6 +543,7 @@ function displayEditForm(postId) {
         console.warn("Message content not found to pre-fill.");
     }
 }
+
 
 
 
