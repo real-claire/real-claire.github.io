@@ -1,5 +1,5 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
-import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, getDocs, query, where, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, getDocs, getDoc, query, where, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
 const firebaseConfig = {
@@ -454,33 +454,32 @@ function signIn() {
 async function deleteMessage(postId) {
     try {
         const docRef = doc(db, "messages", postId);
-        const docSnapshot = await getDoc(docRef); // Fetch the document data
+        const docSnapshot = await getDoc(docRef); // Use getDoc to fetch the document
 
         if (docSnapshot.exists()) {
             const messageData = docSnapshot.data();
-            
+
             if (messageData.parentId === null) { // Check if it's a top-level thread
-                await deleteDoc(docRef); // Delete the thread completely
+                await deleteDoc(docRef); // Delete the thread
                 console.log("Thread deleted successfully.");
-            } else { // If it's a reply
+            } else {
                 await updateDoc(docRef, {
                     userName: "[deleted]",
-                    content: `<p class="deleted-tag">[deleted]</p>`,
-                    title: `<h3 class="deleted-tag">[deleted]</h3>`,
+                    content: "[deleted]",
                     userProfilePic: null,
                 });
             }
 
-            // Re-fetch forums to reflect the changes
-            fetchForums();
+            fetchForums(); // Refresh the forums after deletion
         } else {
             console.warn("Message not found for deletion.");
         }
     } catch (error) {
-        console.error("Error deleting message: ", error);
-        alert("Failed to delete the message.");
+        console.error("Error deleting message:", error);
+        alert("Failed to delete the message. Please try again."); // Handle error with alert
     }
 }
+
 
 function displayEditForm(postId) {
     const existingEditForm = document.querySelector(`#editForm-${postId}`);
@@ -501,34 +500,44 @@ function displayEditForm(postId) {
         </form>
     `;
 
-    const messageElement = document.getElementById(`post-${postId}`);
+    const messageElement = document.getElementById(`post-${postId}`); // Ensure this is not null
     if (messageElement) {
-        messageElement.appendChild(editForm); // Insert the edit form at the end
+        messageElement.appendChild(editForm); // Only append if the message element exists
     } else {
         console.warn("Message element not found.");
     }
 
     const form = editForm.querySelector('form');
-    form.onsubmit = async (event) => {
-        event.preventDefault();
-        const newContent = form.querySelector('.editInput').value;
-        await editMessage(postId, newContent); // Edit the message
-        editForm.style.display = 'none'; // Hide the form after submitting
-    };
+    if (form) {
+        form.onsubmit = async (event) => {
+            event.preventDefault();
+            const newContent = form.querySelector('.editInput').value;
+            await editMessage(postId, newContent); // Edit the message
+            editForm.style.display = 'none'; // Hide the form after submitting
+        };
 
-    editForm.querySelector('.cancelEdit').onclick = () => {
-        editForm.style.display = 'none';
-    };
+        form.querySelector('.cancelEdit').onclick = () => {
+            editForm.style.display = 'none'; // Hide the form on cancel
+        };
+    } else {
+        console.warn("Form element not found in the edit form.");
+    }
 
-    // Fetch existing content to pre-fill the edit input box
-    const currentContentElement = messageElement.querySelector('p'); // Get the message content
+    // Pre-fill the edit input box
+    const currentContentElement = messageElement ? messageElement.querySelector('p') : null;
     if (currentContentElement) {
         const currentContent = currentContentElement.textContent.replace(" (edited)", ""); // Handle null check
-        editForm.querySelector('.editInput').value = currentContent; // Pre-fill the edit input box
+        const editInput = editForm.querySelector('.editInput');
+        if (editInput) {
+            editInput.value = currentContent; // Pre-fill with existing content
+        } else {
+            console.warn("Edit input not found.");
+        }
     } else {
-        console.warn("Message content not found."); // Handle the missing content scenario
+        console.warn("Message content not found to pre-fill.");
     }
 }
+
 
 
 function signOutUser() {
