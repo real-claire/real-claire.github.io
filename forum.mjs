@@ -20,8 +20,8 @@ var mockUser = {
     photoURL: "assets/img.jpg"
 };
 
-const useMockAuth = false;
-var mockSignedIn = false;
+const useMockAuth = true;
+var mockSignedIn = true;
 
 document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('createForumForm').style.display = 'none';
@@ -49,8 +49,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.querySelector(".login-warning").style.display = 'block';
                 document.getElementById('createForumForm').style.display = 'none';
                 document.querySelectorAll('.replyButton').forEach(el => el.style.display = 'none');
-                fetchForums();
             }
+            fetchForums();
         });
     }
 
@@ -68,16 +68,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (event.target.matches('.replyButton')) {
             const postId = event.target.getAttribute('data-postId');
             displayReplyForm(postId);
-        } else if (event.target.matches('.commentButton')) {
+        }
+        
+        if (event.target.matches('.commentButton')) {
             const postId = event.target.getAttribute('data-postId');
             const replyContent = event.target.previousElementSibling.value;
             if (replyContent.trim()) {
                 submitReplyToThread(postId, replyContent, event.target);
             }
-        } else if (event.target.matches('.deleteButton')) { // When a delete button is clicked
+        }
+
+        if (event.target.matches('.deleteButton')) { // When a delete button is clicked
             const postId = event.target.getAttribute('data-postId');
             deleteMessage(postId); // Call the function to delete the message
-        } else if (event.target.matches('.editButton')) { // When an edit button is clicked
+        } 
+        
+        if (event.target.matches('.editButton')) { // When an edit button is clicked
             const postId = event.target.getAttribute('data-postId');
             displayEditForm(postId); // Call the function to show the edit form
         }
@@ -154,8 +160,7 @@ async function fetchForums(sortOrder = 'desc') {
                         <h2 class="thread-title">${message.title}</h2>
                         <p>${message.content}</p>
                         <p class="line"></p>
-                        ${deleteButtonHTML}
-                        ${editButtonHTML}
+                        <p>${editButtonHTML}${deleteButtonHTML}</p>
                         <p>${replyBoxHTML}</p>
                     </div>
                 </div>
@@ -192,6 +197,7 @@ async function fetchReplies(parentId, level = 0) {
 
             const isUserAuthor = auth.currentUser && message.userName === auth.currentUser.displayName; // Check if current user is the author
             const deleteButtonHTML = isUserAuthor ? `<button class="deleteButton" data-postId="${doc.id}">Delete</button>` : ''; // Conditional delete button
+            const editButtonHTML = isUserAuthor ? `<button class="editButton" data-postId="${doc.id}">Edit</button>` : ''; // Conditional edit button
 
             const replyElement = document.createElement('div');
             replyElement.classList.add('reply');
@@ -203,8 +209,7 @@ async function fetchReplies(parentId, level = 0) {
                 <small>· ${formatDate(reply.createdAt)}</small>
             </div>
                 <p>${reply.content}</p>
-                ${auth.currentUser || mockSignedIn  ? `<button class='replyButton' data-postId='${doc.id}'>Reply</button>` : ''}
-                ${deleteButtonHTML}
+                <p>${auth.currentUser || mockSignedIn  ? `<button class='replyButton' data-postId='${doc.id}'>Reply</button>` : ''}${editButtonHTML}${deleteButtonHTML}</p>
                 <div id="replies-${doc.id}"></div>
             `;
                           
