@@ -482,30 +482,6 @@ async function deleteMessage(postId) {
     }
 }
 
-async function deleteThreadAndReplies(postId) {
-    try {
-        const docRef = doc(db, "messages", postId); // Reference to the thread
-        await deleteDoc(docRef); // Delete the thread itself
-
-        // Query and delete all replies with the specified parentId
-        const repliesQuery = query(
-            collection(db, "messages"), 
-            where("parentId", "==", postId) // Get all replies for the thread
-        );
-        
-        const querySnapshot = await getDocs(repliesQuery);
-        const deletePromises = querySnapshot.docs.map((doc) => deleteDoc(doc.ref)); // Prepare delete promises
-
-        await Promise.all(deletePromises); // Delete all replies
-
-        console.log("Thread and its replies deleted successfully.");
-        fetchForums(); // Refresh the forums after deletion
-    } catch (error) {
-        console.error("Error deleting thread and replies:", error);
-        alert("Failed to delete the thread and its replies. Please try again.");
-    }
-}
-
 function displayEditForm(postId) {
     const existingEditForm = document.querySelector(`#editForm-${postId}`);
     if (existingEditForm) {
