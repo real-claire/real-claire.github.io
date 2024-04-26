@@ -139,7 +139,7 @@ async function fetchForums(sortOrder = 'desc') {
         querySnapshot.forEach(doc => {
             const message = doc.data();
 
-            const isUserAuthor = auth.currentUser && message.userProfilePic === auth.currentUser.userProfilePic; // Check if current user is the author
+            const isUserAuthor = auth.currentUser && message.userProfilePic === auth.currentUser.photoURL; // Check if current user is the author
             const isDeleted = message.userName === "[deleted]"; // Check if the message is deleted
             
             const deleteButtonHTML = isUserAuthor ? `<button class="deleteButton" data-postId="${doc.id}">Delete</button>` : ''; // Conditional delete button
@@ -200,7 +200,7 @@ async function fetchReplies(parentId, level = 0) {
             const reply = doc.data();
             const isDeleted = reply.userName === "[deleted]";
 
-            const isUserAuthor = auth.currentUser && reply.userProfilePic === auth.currentUser.userProfilePic; // Check if current user is the author
+            const isUserAuthor = auth.currentUser && reply.userProfilePic === auth.currentUser.photoURL; // Check if current user is the author
      
             const deleteButtonHTML = isUserAuthor ? `<button class="deleteButton" data-postId="${doc.id}">Delete</button>` : ''; // Conditional delete button
             const editButtonHTML = isUserAuthor ? `<button class="editButton" data-postId="${doc.id}">Edit</button>` : ''; // Conditional edit button
@@ -210,12 +210,13 @@ async function fetchReplies(parentId, level = 0) {
             replyElement.style.marginLeft = `${level + 20}px`;
             replyElement.innerHTML = `
             <div class="nestedReply">
-                <img src="${reply.userProfilePic || ''}" alt="User profile picture" class="user-pic">
-                <h3>${isDeleted ? "[deleted]" : reply.userName.split(' ')[0]}</h3> <!-- Show deleted if marked as such -->
-                <small>· ${formatDate(reply.createdAt)}</small>
+                <img src="${isDeleted ? '' : reply.userProfilePic}" class="user-pic">
+                <h3>${isDeleted ? "[deleted]" : reply.userName.split(' ')[0]}</h3>
+                <small> · ${formatDate(reply.createdAt)}</small>
             </div>
                 <p>${isDeleted ? `<p class="deleted-tag">[deleted]</p>` : reply.content}</p> <!-- Show deleted content -->
-                ${(auth.currentUser || mockSignedIn) && !isDeleted ? `<button class='replyButton' data-postId='${doc.id}'>Reply</button>` : ''}                ${editButtonHTML} ${deleteButtonHTML}
+                ${(auth.currentUser || mockSignedIn) && !isDeleted ? `<button class='replyButton' data-postId='${doc.id}'>Reply</button>` : ''}                
+                ${editButtonHTML} ${deleteButtonHTML}
                 <div id="replies-${doc.id}"></div>
             `;
                           
