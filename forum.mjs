@@ -157,7 +157,7 @@ async function fetchForums(sortOrder = 'desc') {
             messageElement.setAttribute('id', postId);
             messageElement.innerHTML = `
                 <div>
-                    <img src="${isDeleted ? message.userProfilePic : ''}" class="user-pic">
+                    <img src="${!isDeleted ? message.userProfilePic : ''}" class="user-pic">
                     <div class="text-container">
                         <span>${message.userName.split(' ')[0]}</span> <!-- First name -->
                         <small>${formatDate(message.createdAt)}</small>
@@ -359,8 +359,13 @@ async function submitReplyToThread(postId, replyContent) {
             createdAt: serverTimestamp(),
         });
         console.log("Reply to thread successfully added!");
-        // Clear the input field after posting
-        document.querySelector(`[data-postId="${postId}"]`).previousElementSibling.value = '';
+        const replyInput = document.querySelector(`[data-postId="${postId}"]`).previousElementSibling;
+        if (replyInput) {
+            replyInput.value = ''; // Clear the input field after posting
+        } else {
+            console.warn("Reply input not found."); // Handle case when input is not found
+        }
+
         fetchReplies(postId);
     } catch (error) {
         console.error("Error submitting reply to thread: ", error);
@@ -402,7 +407,7 @@ async function editMessage(postId, newContent) {
     try {
         const docRef = doc(db, "messages", postId);
         await updateDoc(docRef, {
-            content: `${newContent} <span class="edited-tag">(edited)</span>`, // Apply class to the edited text
+            content: `${newContent} <p class="edited-tag">(edited)</p>`, // Apply class to the edited text
         });
 
         fetchForums(); // Refresh the forums to reflect the edit
