@@ -17,7 +17,7 @@ const auth = getAuth(app);
 
 var mockUser = {
     displayName: "Claire",
-    photoURL: "img.jpg"
+    photoURL: "assets/img.jpg"
 };
 
 const useMockAuth = false;
@@ -74,6 +74,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (replyContent.trim()) {
                 submitReplyToThread(postId, replyContent, event.target);
             }
+        } else if (event.target.matches('.deleteButton')) { // When a delete button is clicked
+            const postId = event.target.getAttribute('data-postId');
+            deleteMessage(postId); // Call the function to delete the message
+        } else if (event.target.matches('.editButton')) { // When an edit button is clicked
+            const postId = event.target.getAttribute('data-postId');
+            displayEditForm(postId); // Call the function to show the edit form
         }
     });
 
@@ -124,8 +130,14 @@ async function fetchForums(sortOrder = 'desc') {
 
         querySnapshot.forEach(doc => {
             const message = doc.data();
+
+            const isUserAuthor = auth.currentUser && message.userName === auth.currentUser.displayName; // Check if current user is the author
+            const deleteButtonHTML = isUserAuthor ? `<button class="deleteButton" data-postId="${doc.id}">Delete</button>` : ''; // Conditional delete button
+            const editButtonHTML = isUserAuthor ? `<button class="editButton" data-postId="${doc.id}">Edit</button>` : ''; // Conditional edit button
+
             const postId = `post-${doc.id}`;
             const messageElement = document.createElement('div');
+
             const replyBoxHTML = auth.currentUser || mockSignedIn ? `
                 <div class="replyBox">
                     <textarea class="replyInput" placeholder="Your reply..." required></textarea>
@@ -137,12 +149,14 @@ async function fetchForums(sortOrder = 'desc') {
                 <div>
                     <img src="${message.userProfilePic || 'default_avatar.png'}" alt="User profile picture" class="user-pic">
                     <div class="text-container">
-                    <span>${message.userName.split(' ')[0]}</span> <!-- First name -->
-                    <small>${formatDate(message.createdAt)}</small>
-                    <h2 class="thread-title">${message.title}</h2>
-                    <p>${message.content}</p>
-                    <p class="line"></p>
-                    <p>${replyBoxHTML}</p>
+                        <span>${message.userName.split(' ')[0]}</span> <!-- First name -->
+                        <small>${formatDate(message.createdAt)}</small>
+                        <h2 class="thread-title">${message.title}</h2>
+                        <p>${message.content}</p>
+                        <p class="line"></p>
+                        ${deleteButtonHTML}
+                        ${editButtonHTML}
+                        <p>${replyBoxHTML}</p>
                     </div>
                 </div>
                 
@@ -175,6 +189,10 @@ async function fetchReplies(parentId, level = 0) {
         const querySnapshot = await getDocs(repliesQuery);
         querySnapshot.forEach(doc => {
             const reply = doc.data();
+
+            const isUserAuthor = auth.currentUser && message.userName === auth.currentUser.displayName; // Check if current user is the author
+            const deleteButtonHTML = isUserAuthor ? `<button class="deleteButton" data-postId="${doc.id}">Delete</button>` : ''; // Conditional delete button
+
             const replyElement = document.createElement('div');
             replyElement.classList.add('reply');
             replyElement.style.marginLeft = `${level + 20}px`;
@@ -186,6 +204,7 @@ async function fetchReplies(parentId, level = 0) {
             </div>
                 <p>${reply.content}</p>
                 ${auth.currentUser || mockSignedIn  ? `<button class='replyButton' data-postId='${doc.id}'>Reply</button>` : ''}
+                ${deleteButtonHTML}
                 <div id="replies-${doc.id}"></div>
             `;
                           
@@ -367,6 +386,21 @@ async function postForum(event) {
     }
 }
 
+async function editMessage(postId, newContent) {
+    try {
+        const docRef = doc(db, "messages", postId);
+        await updateDoc(docRef, {
+            content: `${newContent} (edited)`, // Append (edited) to the new content
+        });
+
+        fetchForums(); // Refresh the forums to reflect the edit
+    } catch (error) {
+        console.error("Error editing message: ", error);
+        alert("Failed to edit the message.");
+    }
+}
+
+
 function signIn() {
     if (useMockAuth === true) {
         document.getElementById('createForumForm').style.display = 'block';
@@ -396,6 +430,64 @@ function signIn() {
             alert("Failed to sign in.");
         });
 }
+
+async function deleteMessage(postId) {
+    try {
+        const docRef = doc(db, "messages", postId);
+        await updateDoc(docRef, {
+            userName: "[deleted]",
+            content: "[deleted]",
+        });
+
+        // Re-fetch forums to reflect the changes
+        fetchForums();
+    } catch (error) {
+        console.error("Error deleting message: ", error);
+        alert("Failed to delete the message.");
+    }
+}
+
+function displayEditForm(postId) {
+    const existingEditForm = document.querySelector(`#editForm-${postId}`);
+    if (existingEditForm) {
+        existingEditForm.style.display = 'block';
+        return;
+    }
+
+    const editForm = document.createElement('div');
+    editForm.id = `editForm-${postId}`;
+    editForm.innerHTML = `
+        <form>
+            <textarea class="editInput" required></textarea>
+            <div class="form-actions">
+                <button type="submit" class="submitEdit">Submit Edit</button>
+                <button type="button" class="cancelEdit">Cancel</button>
+            </div>
+        </form>
+    `;
+
+    const parentContainer = document.getElementById(`post-${postId}`) || document.getElementById(`replies-${postId}`);
+    parentContainer.appendChild(editForm);
+
+    const form = editForm.querySelector('form');
+    form.onsubmit = async (event) => {
+        event.preventDefault();
+        const newContent = form.querySelector('.editInput').value;
+        await editMessage(postId, newContent);
+
+        // Hide the edit form after submitting
+        editForm.style.display = 'none';
+    };
+
+    editForm.querySelector('.cancelEdit').onclick = () => {
+        editForm.style.display = 'none';
+    };
+
+    // Pre-populate the text area with the existing content
+    const currentContent = parentContainer.querySelector('p').textContent;
+    editForm.querySelector('.editInput').value = currentContent.replace(" (edited)", ""); // Remove the "(edited)" suffix for the pre-populated content
+}
+
 
 function signOutUser() {
     document.getElementById("userDropdown").style.display = 'none';

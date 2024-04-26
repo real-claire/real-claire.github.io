@@ -36,7 +36,7 @@ class HeaderComponent extends HTMLElement {
                 top: 0;
                 left: 0;
                 width: 100%;
-                background-color: #2c2f33c2;
+                background-color: #2c2f33;
                 color: white;
                 z-index: 1000;
                 animation: rainbow 10s infinite;
@@ -93,7 +93,20 @@ class HeaderComponent extends HTMLElement {
                 border-radius: 25%;
             }
 
+            video {
+                object-fit: cover;
+                width: 100vw;
+                height: 100vh;
+                position: fixed;
+                z-index: -100;
+                top: 0;
+                left: 0;
+              }
+
         </style>
+        <video playsinline autoplay muted loop id="bgvid">
+            <source src="assets/bgVid.mp4" type="video/mp4">
+        </video>
         <div class="sticky-header">
             <nav class="nav-bar">
                 <ul class="nav-links">

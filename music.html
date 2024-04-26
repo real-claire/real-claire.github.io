@@ -4,16 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Claire's Music</title>
-    <script src="https://apis.google.com/js/api.js"></script>
+    <link rel="stylesheet" href="music.css">
     <script src="header.js" defer></script>
-    <script src="music.js" defer></script>
+    <script type="module" src="music.mjs" defer></script>
+    <!-- Add Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-firestore.js"></script>
 </head>
 <body> 
     <header-component></header-component><br><br><br>
-    <h1>imagine cool stuff here</h1>
-    <p>someday.....</p>
-    <button id="auth">Authenticate with Google</button>
-    <button id="loadSongs" style="display: none;">Load My Songs</button>
-    <ul id="songList"></ul>
+    <div class="center-content">
+        <div class="content-container">
+            <header>
+                <div class="header-content">
+                    <h1><i>REAL</i> Music I've Made</h1>
+                </div>
+            </header>
+            <div class="sort-options">
+                <label for="sortOrder">Sort By:</label>
+                    <select id="sortOrderSelect">
+                        <option value="desc">Newest First</option>
+                        <option value="asc">Oldest First</option>
+                    </select>
+            </div>
+            <div class="grid-container"></div>
+        </div>
+    </div>
 </body>
 </html>

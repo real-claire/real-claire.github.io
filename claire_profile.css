@@ -16,65 +16,64 @@
 	80% { color:  fuchsia }
 }
 
-video {
-  object-fit: cover;
-  width: 100vw;
-  height: 100vh;
-  position: fixed;
-  top: 0;
-  left: 0;
-}
-
-audio {
-  filter: sepia(20%) saturate(70%) grayscale(1) contrast(100%) invert(16%);
-  height: 1.5vw;
-  width: 40vw;
-  animation: rainbow 3s infinite;
-  background-color: white;
-  margin-left: 10vw;
-  margin-top: 1vw;
-  max-width: 450px;
-}
-
-body{
+html, body {
+  height: 100%;
   margin: 0;
-  width: 100vw;
-  height: 100vh;
+  padding: 0;
+  justify-content: center;
 }
 
 h1{
-  font-size: 2.3vw;
-  padding: 3%;
+  font-size: clamp(20px, 2.5vw, 40px);
+  padding: 1%;
   background-color: #2c2f33;
-  color: white;
+  border-radius: 8px;
+  color: rgb(228, 199, 230);
 }
 
+.rainbowText{
+  animation: rainbowText 10s infinite; 
+}
 
 p{
   margin-bottom: 4%;
-  font-size: 1.4vw;
+  font-size: clamp(15px, 1.2vw, 27px);
   color: white;
 }
 
 a{
-  animation: rainbowText 3s infinite;
+  animation: rainbowText 10s infinite;
 }
 
 img{
   width: 40%;
   height: 40%;
   border-radius: 50%;
-  animation: rainbow 3s infinite;
+  animation: rainbow 10s infinite;
   max-width: 350px;
 }
 
+header {
+  margin: auto;
+  margin-top: 3%;
+  background-color: #2c2f33d6;
+  animation: rainbow 10s infinite;
+  padding: 20px;
+  max-width: 1500px;
+  width: 90%;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-radius: 5px;
+}
+
 .card {
-  max-width: 900px;
+  max-width: 1000px;
   position: relative;
   font-family: "Trebuchet MS";
   padding: 5%;
   background-color: #232323d4;
-  animation: rainbow 3s infinite;
+  animation: rainbow 10s infinite;
 
   box-sizing: border-box;
   margin-left: auto;
@@ -82,7 +81,8 @@ img{
   margin-bottom: 10%;
   margin-top: 10%;
   text-align: center;
-  width: 65vw;
+  width: 90vw;
+  border-radius: 8px;
 }
 
 .video {
@@ -92,26 +92,19 @@ img{
 .title {
   padding: 3%;
   color: rgb(228, 199, 230);
-  font-size: 1.3vw;
+  font-size: minmax(1.3vw, 150px);
   margin-bottom: 7%;
 }
 
 .pronouns {
   margin-top: -4%;
   color: rgb(241, 227, 242);
-  font-size: 1vw;
-  margin-bottom: 6%;
+  font-size: clamp(15px, 1.2vw, 27px);
+  margin-bottom: 3%;
 }
 
 .subtext {
   margin-top: -5%;
-  font-size: 1vw;
+  font-size: minmax(1vw, 100px);
   color: #eeeeeed4;
-}
-
-.songTitle {
-  font-size: 1.25vw;
-  text-align: left;
-  margin-left: 1vw;
-  margin-top: -1.8vw;
 }

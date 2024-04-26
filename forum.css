@@ -28,16 +28,6 @@
 	80% { color:  fuchsia }
 }
 
-video {
-    object-fit: cover;
-    width: 100vw;
-    height: 100vh;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: -100;
-}
-
 body, html {
     font-family: "Trebuchet MS";
     background-color: #232323c2;    
@@ -69,8 +59,7 @@ h1 {
 }
 
 i{
-    animation: rainbowText 10s infinite;
-    
+    animation: rainbowText 10s infinite; 
 }
 
 a{
