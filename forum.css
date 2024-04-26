@@ -285,7 +285,7 @@ small {
     margin-bottom: -3cap;
 }
 
-.replyInput {
+.replyInput, .editInput {
     width: calc(100% - 18px);
     height: calc(5cap);
     resize: vertical;
@@ -335,11 +335,11 @@ input[type="submit"]:hover {
 }
 
 .edited-tag {
-    font-size: 0.4em; /* Smaller font size */
+    font-size: 0.8em; /* Smaller font size */
     color: #888; /* Darker gray color */
 }
 
 .deleted-tag {
-    font-size: 0.4em; /* Smaller font size */
+    font-size: 0.8em; /* Smaller font size */
     color: #888; /* Darker gray color */
 }

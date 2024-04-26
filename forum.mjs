@@ -157,7 +157,7 @@ async function fetchForums(sortOrder = 'desc') {
             messageElement.setAttribute('id', postId);
             messageElement.innerHTML = `
                 <div>
-                    <img src="${message.userProfilePic || ''}" alt="User profile picture" class="user-pic">
+                    <img src="${isDeleted ? message.userProfilePic : ''}" class="user-pic">
                     <div class="text-container">
                         <span>${message.userName.split(' ')[0]}</span> <!-- First name -->
                         <small>${formatDate(message.createdAt)}</small>
@@ -448,7 +448,8 @@ async function deleteMessage(postId) {
         const docRef = doc(db, "messages", postId);
         await updateDoc(docRef, {
             userName: "[deleted]",
-            content: `<span class="deleted-tag">[deleted]</span>`,
+            content: `<p class="deleted-tag">[deleted]</p>`,
+            content: `<h3 class="deleted-tag">[deleted]</h3>`,
             userProfilePic: null,
         });
 
@@ -479,20 +480,15 @@ function displayEditForm(postId) {
         </form>
     `;
 
-    const messageElement = document.getElementById(`post-${postId}`); // Get the parent node
-    const replyBox = messageElement.querySelector('.replyBox'); // Locate the reply box
-    
-    if (replyBox) {
-        messageElement.insertBefore(editForm, replyBox); // Insert before the reply box if it exists
-    } else {
-        messageElement.appendChild(editForm); // Otherwise, add to the end of the message element
-    }
+    // Add the edit form to the appropriate post
+    const parentContainer = document.getElementById(`post-${postId}`) || document.getElementById(`replies-${postId}`);
+    parentContainer.appendChild(editForm);
 
     const form = editForm.querySelector('form');
     form.onsubmit = async (event) => {
         event.preventDefault();
         const newContent = form.querySelector('.editInput').value;
-        await editMessage(postId, newContent); // Call the function to edit the message
+        await editMessage(postId, newContent);
 
         // Hide the edit form after submitting
         editForm.style.display = 'none';
@@ -503,11 +499,9 @@ function displayEditForm(postId) {
     };
 
     // Pre-populate the text area with the existing content
-    const currentContent = messageElement.querySelector('p').textContent;
-    editForm.querySelector('.editInput').value = currentContent.replace(" (edited)", ""); // Reset pre-filled content
+    const currentContent = parentContainer.querySelector('p').textContent;
+    editForm.querySelector('.editInput').value = currentContent.replace(" (edited)", "");
 }
-
-
 
 function signOutUser() {
     document.getElementById("userDropdown").style.display = 'none';
