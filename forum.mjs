@@ -1,5 +1,5 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
-import { getFirestore, collection, addDoc, doc, updateDoc, getDocs, query, where, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, getDocs, query, where, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
 const firebaseConfig = {
@@ -80,9 +80,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.addEventListener('click', (event) => {
-        if (event.target.matches('.deleteButton')) { // When a delete button is clicked
-            const postId = event.target.getAttribute('data-postId'); // Get the post ID
-            deleteMessage(postId); // Call delete function
+        if (event.target.matches('.deleteButton')) {
+            const postId = event.target.getAttribute('data-postId'); // Get the message ID
+            const confirmation = confirm("Are you sure you want to delete this message?");
+            if (confirmation) {
+                deleteMessage(postId); // Conditionally delete the message
+            }
         }
 
         if (event.target.matches('.editButton')) { // When an edit button is clicked
@@ -451,18 +454,55 @@ function signIn() {
 async function deleteMessage(postId) {
     try {
         const docRef = doc(db, "messages", postId);
-        await updateDoc(docRef, {
-            userName: "[deleted]",
-            content: `<p class="deleted-tag">[deleted]</p>`,
-            content: `<h3 class="deleted-tag">[deleted]</h3>`,
-            userProfilePic: null,
-        });
+        const docSnapshot = await getDoc(docRef); // Fetch the document data
 
-        // Re-fetch forums to reflect the changes
-        fetchForums();
+        if (docSnapshot.exists()) {
+            const messageData = docSnapshot.data();
+            
+            if (messageData.parentId === null) { // Check if it's a top-level thread
+                await deleteDoc(docRef); // Delete the thread completely
+                console.log("Thread deleted successfully.");
+            } else { // If it's a reply
+                await updateDoc(docRef, {
+                    userName: "[deleted]",
+                    content: `<p class="deleted-tag">[deleted]</p>`,
+                    title: `<h3 class="deleted-tag">[deleted]</h3>`,
+                    userProfilePic: null,
+                });
+            }
+
+            // Re-fetch forums to reflect the changes
+            fetchForums();
+        } else {
+            console.warn("Message not found for deletion.");
+        }
     } catch (error) {
         console.error("Error deleting message: ", error);
         alert("Failed to delete the message.");
+    }
+}
+
+async function deleteThreadAndReplies(postId) {
+    try {
+        const docRef = doc(db, "messages", postId); // Reference to the thread
+        await deleteDoc(docRef); // Delete the thread itself
+
+        // Query and delete all replies with the specified parentId
+        const repliesQuery = query(
+            collection(db, "messages"), 
+            where("parentId", "==", postId) // Get all replies for the thread
+        );
+        
+        const querySnapshot = await getDocs(repliesQuery);
+        const deletePromises = querySnapshot.docs.map((doc) => deleteDoc(doc.ref)); // Prepare delete promises
+
+        await Promise.all(deletePromises); // Delete all replies
+
+        console.log("Thread and its replies deleted successfully.");
+        fetchForums(); // Refresh the forums after deletion
+    } catch (error) {
+        console.error("Error deleting thread and replies:", error);
+        alert("Failed to delete the thread and its replies. Please try again.");
     }
 }
 
@@ -485,28 +525,35 @@ function displayEditForm(postId) {
         </form>
     `;
 
-    // Add the edit form to the appropriate post
-    const parentContainer = document.getElementById(`post-${postId}`) || document.getElementById(`replies-${postId}`);
-    parentContainer.appendChild(editForm);
+    const messageElement = document.getElementById(`post-${postId}`);
+    if (messageElement) {
+        messageElement.appendChild(editForm); // Insert the edit form at the end
+    } else {
+        console.warn("Message element not found.");
+    }
 
     const form = editForm.querySelector('form');
     form.onsubmit = async (event) => {
         event.preventDefault();
         const newContent = form.querySelector('.editInput').value;
-        await editMessage(postId, newContent);
-
-        // Hide the edit form after submitting
-        editForm.style.display = 'none';
+        await editMessage(postId, newContent); // Edit the message
+        editForm.style.display = 'none'; // Hide the form after submitting
     };
 
     editForm.querySelector('.cancelEdit').onclick = () => {
         editForm.style.display = 'none';
     };
 
-    // Pre-populate the text area with the existing content
-    const currentContent = parentContainer.querySelector('p').textContent;
-    editForm.querySelector('.editInput').value = currentContent.replace(" (edited)", "");
+    // Fetch existing content to pre-fill the edit input box
+    const currentContentElement = messageElement.querySelector('p'); // Get the message content
+    if (currentContentElement) {
+        const currentContent = currentContentElement.textContent.replace(" (edited)", ""); // Handle null check
+        editForm.querySelector('.editInput').value = currentContent; // Pre-fill the edit input box
+    } else {
+        console.warn("Message content not found."); // Handle the missing content scenario
+    }
 }
+
 
 function signOutUser() {
     document.getElementById("userDropdown").style.display = 'none';
