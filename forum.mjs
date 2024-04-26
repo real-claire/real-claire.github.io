@@ -20,8 +20,8 @@ var mockUser = {
     photoURL: "assets/img.jpg"
 };
 
-const useMockAuth = true;
-var mockSignedIn = true;
+const useMockAuth = false;
+var mockSignedIn = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('createForumForm').style.display = 'none';
