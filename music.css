@@ -17,6 +17,10 @@
     80% { color: fuchsia }
 }
 
+body {
+    font-family: "Trebuchet MS";
+}
+
 h1{
     font-size: clamp(20px, 2vw, 40px);
     background-color: #2c2f33;
@@ -100,18 +104,29 @@ audio {
 }
 
 .sort-options {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    margin-bottom: 1cap;
 }
 
 .sort-options > label {  
     color: #eeeeeed4;
 }
 
+.sort-options > select {
+    padding: 1%;
+    background-color: #232323d4;
+    color: #eeeeeed4;
+    border-width: 0px;
+    border-radius: 5px;
+}
+
 .sortOrderSelect > option {
     padding: 5%;
     border-radius: 0px;
+}
+
+label  {
+    font-size: clamp(16px, 0.9vw, 20px);
+    color: #f0d7d7d4;
 }
 
 .header {

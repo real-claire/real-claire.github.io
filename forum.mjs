@@ -139,7 +139,7 @@ async function fetchForums(sortOrder = 'desc') {
         querySnapshot.forEach(doc => {
             const message = doc.data();
 
-            const isUserAuthor = auth.currentUser && message.userName === auth.currentUser.displayName; // Check if current user is the author
+            const isUserAuthor = auth.currentUser && message.userProfilePic === auth.currentUser.userProfilePic; // Check if current user is the author
             const isDeleted = message.userName === "[deleted]"; // Check if the message is deleted
             
             const deleteButtonHTML = isUserAuthor ? `<button class="deleteButton" data-postId="${doc.id}">Delete</button>` : ''; // Conditional delete button
@@ -475,22 +475,20 @@ function displayEditForm(postId) {
         </form>
     `;
 
-    // Position the edit form above the reply input box
-    const messageElement = document.getElementById(`post-${postId}`); // Get the message element
-    const replyBox = messageElement.querySelector('.replyBox'); // Get the reply box
-
-    // Insert the edit form before the reply box
+    const messageElement = document.getElementById(`post-${postId}`); // Get the parent node
+    const replyBox = messageElement.querySelector('.replyBox'); // Locate the reply box
+    
     if (replyBox) {
-        messageElement.insertBefore(editForm, replyBox);
+        messageElement.insertBefore(editForm, replyBox); // Insert before the reply box if it exists
     } else {
-        messageElement.appendChild(editForm); // Default to appending at the end if no reply box is found
+        messageElement.appendChild(editForm); // Otherwise, add to the end of the message element
     }
 
     const form = editForm.querySelector('form');
     form.onsubmit = async (event) => {
         event.preventDefault();
         const newContent = form.querySelector('.editInput').value;
-        await editMessage(postId, newContent); // Call the edit function
+        await editMessage(postId, newContent); // Call the function to edit the message
 
         // Hide the edit form after submitting
         editForm.style.display = 'none';
@@ -502,8 +500,9 @@ function displayEditForm(postId) {
 
     // Pre-populate the text area with the existing content
     const currentContent = messageElement.querySelector('p').textContent;
-    editForm.querySelector('.editInput').value = currentContent.replace(" (edited)", ""); // Remove "(edited)" if needed
+    editForm.querySelector('.editInput').value = currentContent.replace(" (edited)", ""); // Reset pre-filled content
 }
+
 
 
 function signOutUser() {
@@ -526,6 +525,7 @@ function signOutUser() {
         document.getElementById("authButton").style.display = "block";
         document.getElementById('createForumForm').style.display = 'block';
         document.querySelector(".login-warning").style.display = 'block';
+        fetchForums();
     }).catch((error) => {
         console.error("Error signing out: ", error);
         alert("Failed to sign out.");
