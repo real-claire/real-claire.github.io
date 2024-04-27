@@ -10,15 +10,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
 
-document.addEventListener('DOMContentLoaded', function() {
-    fetchDataAndSort('desc');  // Default sorting order
-
-    const sortOrderSelect = document.getElementById('sortOrderSelect');
-    sortOrderSelect.addEventListener('change', () => {
-        fetchDataAndSort(sortOrderSelect.value);
-    });
-});
-
 function fetchDataAndSort(order) {
     const musicCardsContainer = document.querySelector('.grid-container');
     musicCardsContainer.innerHTML = '';  // Clear existing content
@@ -42,7 +33,7 @@ function fetchDataAndSort(order) {
                 <div class="music-card">
                     <h2>${data.title}</h2>
                     <audio controls="controls">
-                        <source src="${data.url}">
+                        <source src="${data.url}" type="audio/mp3">
                     </audio>
                     <p>${data.description}</p>
                     <br><p class="subtext" style="font-size: 10pt;">Composed ${data.composed}</p>
@@ -69,18 +60,32 @@ function parseDate(dateStr) {
   
 function onlyPlayOneIn(container) {
     container.addEventListener("play", function(event) {
-    audio_elements = container.getElementsByTagName("audio")
-      for(i=0; i < audio_elements.length; i++) {
-        audio_element = audio_elements[i];
-        audio_elements[i].volume = 0.05;
-        if (audio_element !== event.target) {
-          audio_element.pause();
+        const audioElements = container.getElementsByTagName("audio");
+        const musicCards = container.getElementsByClassName("music-card");
+
+        for (let i = 0; i < audioElements.length; i++) {
+            const audioElement = audioElements[i];
+            const musicCard = musicCards[i];
+
+            audioElements[i].volume = 0.3;
+
+            if (audioElement !== event.target) {
+                audioElement.pause();
+                musicCard.classList.remove("playing"); // Remove playing class from other cards
+            } else {
+                musicCard.classList.add("playing"); // Add playing class to the current card
+            }
         }
-      }
     }, true);
-  }
+}
     
-  document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function() {
     onlyPlayOneIn(document.body);
-  });
-  
+
+    const sortOrderSelect = document.getElementById('sortOrderSelect');
+    sortOrderSelect.addEventListener('change', () => {
+        fetchDataAndSort(sortOrderSelect.value);
+    });
+
+    fetchDataAndSort('desc'); // Default sorting order
+});

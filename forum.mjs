@@ -23,6 +23,10 @@ var mockUser = {
 const useMockAuth = false;
 var mockSignedIn = false;
 
+// ------------------------
+//       Listeners
+// ------------------------
+
 document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('createForumForm').style.display = 'none';
     document.getElementById('createForumForm').addEventListener('submit', postForum);
@@ -122,7 +126,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 });
 
-
+// ------------------------
+//         Posting
+// ------------------------
 
 async function fetchForums(sortOrder = 'desc') {
     const forumsContainer = document.getElementById('forumsList');
@@ -232,25 +238,70 @@ async function fetchReplies(parentId, level = 0) {
     }
 }
 
-let currentOpenFormId = null;
+async function postForum(event) {
+    event.preventDefault(); // Prevent the form from submitting in the traditional way
 
-function displayReplyForm(postId, level = 0) {
-    if (currentOpenFormId && currentOpenFormId !== postId) {
-        const currentlyOpenForm = document.getElementById(`replyForm-${currentOpenFormId}`);
-        if (currentlyOpenForm) {
-            currentlyOpenForm.style.display = 'none';
-            const formToReset = currentlyOpenForm.querySelector('form');
+    const title = document.getElementById('title').value;
+    const content = document.getElementById('content').value;
+
+    if (!title || !content) {
+        alert("Please fill in all fields.");
+        return;
+    }
+
+    try {
+        await addDoc(collection(db, "messages"), {
+            title,
+            content,
+            userName: auth.currentUser.displayName,
+            userProfilePic: auth.currentUser.photoURL,
+            parentId: null, // Indicating this is a top-level post
+            createdAt: serverTimestamp()
+        });
+        console.log("Thread successfully posted!");
+        document.getElementById('title').value = '';
+        document.getElementById('content').value = '';
+        fetchForums(); // Refresh the list of forums
+    } catch (error) {
+        console.error("Error posting thread: ", error);
+        alert("Failed to post the thread.");
+    }
+}
+
+// ------------------------
+//   Reply & Edit Forms
+// ------------------------
+
+// Track the current open form and its type
+let currentOpenFormId = null;
+let currentOpenFormType = null;
+
+function switchActiveForm(postId) {
+    if (currentOpenFormId) {
+        // Close existing reply form
+        const currentReplyForm = document.getElementById(`replyForm-${currentOpenFormId}`);
+        if (currentReplyForm) {
+            currentReplyForm.style.display = 'none';
+            const formToReset = currentReplyForm.querySelector('form');
             if (formToReset) {
-                formToReset.reset();
+                formToReset.reset(); // Reset the form content
             }
-            const currentOpenReplyButton = document.querySelector(`[data-postId="${currentOpenFormId}"].replyButton`);
-            if (currentOpenReplyButton) {
-                currentOpenReplyButton.style.display = '';
-            }
+        }
+
+        // Close existing edit form
+        const currentEditForm = document.getElementById(`editForm-${currentOpenFormId}`);
+        if (currentEditForm) {
+            currentEditForm.style.display = 'none';
         }
     }
 
-    const replyButton = document.querySelector(`[data-postId="${postId}"].replyButton`);
+    currentOpenFormId = null; // Reset the open form ID
+    currentOpenFormType = null; // Reset the open form type
+}
+
+function displayReplyForm(postId) {
+    switchActiveForm(postId); // Ensure all other forms are closed
+
     const replyFormId = `replyForm-${postId}`;
     let replyForm = document.getElementById(replyFormId);
 
@@ -267,58 +318,105 @@ function displayReplyForm(postId, level = 0) {
                 </div>
             </form>
         `;
-    
-        let parentContainer = document.getElementById(`replies-${postId}`) || document.getElementById(`post-${postId}`);
-        parentContainer.appendChild(formContainer);
+
+        const parentContainer = document.getElementById(`replies-${postId}`) || document.getElementById(`post-${postId}`);
+        parentContainer.insertBefore(formContainer, parentContainer.firstChild); // Insert above reply and edit buttons
 
         const form = formContainer.querySelector('form');
         form.onsubmit = async (event) => {
             event.preventDefault();
-            await submitReply(event, postId, form);
-            // Reveal the reply button when the reply is submitted
-            replyButton.style.display = '';
+            await submitReply(event, postId, form); // Submit reply
+            form.reset(); // Reset the form
+            replyForm.style.display = 'none'; // Hide the form after submission
         };
 
         formContainer.querySelector('.cancelReply').onclick = () => {
-            closeReplyForm(formContainer);
-            // Reveal the reply button when the form is canceled
-            replyButton.style.display = '';
+            formContainer.style.display = 'none'; // Hide the form on cancel
+            currentOpenFormId = null; // Reset open form ID on cancel
         };
 
         formContainer.style.display = 'block';
-        formContainer.querySelector('.replyInput').focus();
+        formContainer.querySelector('.replyInput').focus(); // Ensure focus on the input
     } else {
         replyForm.style.display = 'block';
-        replyForm.querySelector('.replyInput').focus();
+        replyForm.querySelector('.replyInput').focus(); // Ensure focus
     }
 
-    currentOpenFormId = postId;
-
-    // Hide the reply button that was clicked
-    replyButton.style.display = 'none';
+    currentOpenFormId = postId; // Update the open form ID
+    currentOpenFormType = "reply"; // Set the form type
 }
 
+function displayEditForm(postId) {
+    switchActiveForm(postId); // Ensure all other forms are closed
 
-function closeReplyForm(form) {
-    form.style.display = 'none';
-    form.querySelector('form').reset();
+    const editFormId = `editForm-${postId}`;
+    let editForm = document.getElementById(editFormId);
 
-    // Find the postId of the form being closed
-    const postIdMatch = form.id.match(/replyForm-(.*)/);
-    if (postIdMatch) {
-        const postId = postIdMatch[1];
-        // Reset currentOpenFormId if this is the form that was open
-        if (postId === currentOpenFormId) {
-            currentOpenFormId = null;
+    if (!editForm) {
+        editForm = document.createElement('div');
+        editForm.id = editFormId;
+        editForm.classList.add('editForm');
+        editForm.innerHTML = `
+            <form>
+                <textarea class="editInput" required></textarea>
+                <div class="form-actions">
+                    <button type="submit" class="submitEdit">Submit Edit</button>
+                    <button type="button" class="cancelEdit">Cancel</button>
+                </div>
+            </form>
+        `;
+
+        let messageElement = document.getElementById(`post-${postId}`) || document.querySelector(`[data-postId='${postId}']`).closest('.reply');
+        if (!messageElement) {
+            console.warn("Message element not found. Ensure the ID is correct.");
+            return; // Stop if no valid parent found
+        }
+        const parentContainer = document.getElementById(`replies-${postId}`) || document.getElementById(`post-${postId}`);
+        parentContainer.insertBefore(editForm, parentContainer.firstChild); // Insert above reply and edit buttons
+
+        const form = editForm.querySelector('form');
+        if (form) {
+            form.onsubmit = async (event) => {
+                event.preventDefault();
+                const editInput = form.querySelector('.editInput');
+                if (editInput) {
+                    const newContent = editInput.value;
+                    await editMessage(postId, newContent); // Edit the message
+                    editForm.style.display = 'none'; // Hide the edit form after submission
+                    currentOpenFormId = null; // Reset the open form ID
+                }
+            };
+
+            form.querySelector('.cancelEdit').onclick = () => {
+                editForm.style.display = 'none'; // Hide on cancel
+                currentOpenFormId = null; // Reset the open form ID
+            };
+        } else {
+            console.warn("Form not found in the edit form.");
         }
 
-        // Make the reply button visible again
-        const replyButton = document.querySelector(`[data-postId="${postId}"].replyButton`);
-        if (replyButton) {
-            replyButton.style.display = '';
+        const currentContentElement = messageElement.querySelector('p'); // Find the content for prefill
+        if (currentContentElement) {
+            const currentContent = currentContentElement.textContent.replace(" (edited)", ""); // Ensure proper prefill
+            const editInput = form.querySelector('.editInput');
+            if (editInput) {
+                editInput.value = currentContent; // Pre-fill with existing content
+            }
+        } else {
+            console.warn("Message content not found to pre-fill.");
         }
+    } else {
+        editForm.style.display = 'block'; // Ensure the edit form is visible
+        editForm.querySelector('.editInput').focus(); // Ensure focus on the input
     }
+
+    currentOpenFormId = postId; // Update the open form ID
+    currentOpenFormType = "edit"; // Set the form type
 }
+
+// ------------------------
+//     Reply & Edit
+// ------------------------
 
 async function submitReply(event, parentId, form) {
     event.preventDefault();
@@ -339,7 +437,7 @@ async function submitReply(event, parentId, form) {
             content: replyContent,
             parentId: parentId,
             userName: auth.currentUser.displayName,
-            userProfilePic: auth.currentUser.photoURL || 'default_profile_pic_url.jpg',
+            userProfilePic: auth.currentUser.photoURL || 'default_avatar.jpg',
             createdAt: serverTimestamp(),
         });
         console.log("Reply successfully added!");
@@ -376,36 +474,6 @@ async function submitReplyToThread(postId, replyContent) {
 
 }
 
-async function postForum(event) {
-    event.preventDefault(); // Prevent the form from submitting in the traditional way
-
-    const title = document.getElementById('title').value;
-    const content = document.getElementById('content').value;
-
-    if (!title || !content) {
-        alert("Please fill in all fields.");
-        return;
-    }
-
-    try {
-        await addDoc(collection(db, "messages"), {
-            title,
-            content,
-            userName: auth.currentUser.displayName,
-            userProfilePic: auth.currentUser.photoURL,
-            parentId: null, // Indicating this is a top-level post
-            createdAt: serverTimestamp()
-        });
-        console.log("Thread successfully posted!");
-        document.getElementById('title').value = '';
-        document.getElementById('content').value = '';
-        fetchForums(); // Refresh the list of forums
-    } catch (error) {
-        console.error("Error posting thread: ", error);
-        alert("Failed to post the thread.");
-    }
-}
-
 async function editMessage(postId, newContent) {
     try {
         const docRef = doc(db, "messages", postId);
@@ -418,37 +486,6 @@ async function editMessage(postId, newContent) {
         console.error("Error editing message: ", error);
         alert("Failed to edit the message.");
     }
-}
-
-
-function signIn() {
-    if (useMockAuth === true) {
-        document.getElementById('createForumForm').style.display = 'block';
-        document.querySelectorAll('.replyButton').forEach(el => el.style.display = 'inline-block');
-        document.getElementById("userInfo").style.display = "flex";
-        document.getElementById("authButton").style.display = "none";
-        document.getElementById("userPic").src = "img.jpg" || 'default_avatar.png';
-        document.getElementById("userName").textContent = "Claire";
-        document.querySelector(".login-warning").style.display = 'none';
-        mockSignedIn = true;
-        fetchForums();
-        return;
-    }
-    const provider = new GoogleAuthProvider();
-    signInWithPopup(auth, provider)
-        .then((result) => {
-            console.log("User signed in");
-            document.getElementById("userInfo").style.display = "flex";
-            document.getElementById("authButton").style.display = "none";
-            document.getElementById('createForumForm').style.display = 'block';
-            document.getElementById("userPic").src = result.user.photoURL || 'default_avatar.png';
-            document.getElementById("userName").textContent = `${result.user.displayName}`;
-            document.querySelector(".login-warning").style.display = 'none';
-        })
-        .catch((error) => {
-            console.error("Error signing in: ", error);
-            alert("Failed to sign in.");
-        });
 }
 
 async function deleteMessage(postId) {
@@ -480,72 +517,39 @@ async function deleteMessage(postId) {
     }
 }
 
+// ------------------------
+//      Login&Out
+// ------------------------
 
-function displayEditForm(postId) {
-    const existingEditForm = document.querySelector(`#editForm-${postId}`);
-    if (existingEditForm) {
-        existingEditForm.style.display = 'block';
+function signIn() {
+    if (useMockAuth === true) {
+        document.getElementById('createForumForm').style.display = 'block';
+        document.querySelectorAll('.replyButton').forEach(el => el.style.display = 'inline-block');
+        document.getElementById("userInfo").style.display = "flex";
+        document.getElementById("authButton").style.display = "none";
+        document.getElementById("userPic").src = "img.jpg" || 'default_avatar.png';
+        document.getElementById("userName").textContent = "Claire";
+        document.querySelector(".login-warning").style.display = 'none';
+        mockSignedIn = true;
+        fetchForums();
         return;
     }
-
-    const editForm = document.createElement('div');
-    editForm.id = `editForm-${postId}`;
-    editForm.innerHTML = `
-        <form>
-            <textarea class="editInput" required></textarea>
-            <div class="form-actions">
-                <button type="submit" class="submitEdit">Submit Edit</button>
-                <button type="button" class="cancelEdit">Cancel</button>
-            </div>
-        </form>
-    `;
-
-    const messageElement = document.getElementById(`post-${postId}`); // Ensure correct ID and structure
-    if (messageElement) {
-        messageElement.appendChild(editForm); // Only append if the element exists
-    } else {
-        console.warn("Message element not found. Check if the ID is correct."); // Warn if not found
-        return; // Stop if the element doesn't exist
-    }
-
-    // Additional checks before accessing other elements
-    const form = editForm.querySelector('form');
-    if (form) {
-        form.onsubmit = async (event) => {
-            event.preventDefault();
-            const editInput = form.querySelector('.editInput'); // Ensure editInput is valid
-            if (editInput) {
-                const newContent = editInput.value;
-                await editMessage(postId, newContent); // Edit the message
-                editForm.style.display = 'none'; // Hide after editing
-            } else {
-                console.warn("Edit input not found.");
-            }
-        };
-
-        form.querySelector('.cancelEdit').onclick = () => {
-            editForm.style.display = 'none';
-        };
-    } else {
-        console.warn("Form element not found in edit form.");
-    }
-
-    const currentContentElement = messageElement.querySelector('p'); // Pre-fill the edit box
-    if (currentContentElement) {
-        const currentContent = currentContentElement.textContent.replace(" (edited)", ""); // Handle null checks
-        const editInput = editForm.querySelector('.editInput');
-        if (editInput) {
-            editInput.value = currentContent; // Pre-fill with existing content
-        } else {
-            console.warn("Edit input not found.");
-        }
-    } else {
-        console.warn("Message content not found to pre-fill.");
-    }
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider)
+        .then((result) => {
+            console.log("User signed in");
+            document.getElementById("userInfo").style.display = "flex";
+            document.getElementById("authButton").style.display = "none";
+            document.getElementById('createForumForm').style.display = 'block';
+            document.getElementById("userPic").src = result.user.photoURL || 'default_avatar.png';
+            document.getElementById("userName").textContent = `${result.user.displayName}`;
+            document.querySelector(".login-warning").style.display = 'none';
+        })
+        .catch((error) => {
+            console.error("Error signing in: ", error);
+            alert("Failed to sign in.");
+        });
 }
-
-
-
 
 function signOutUser() {
     document.getElementById("userDropdown").style.display = 'none';
@@ -574,30 +578,6 @@ function signOutUser() {
     });
 }
 
-function formatDate(timestamp) {
-    const date = timestamp.toDate();
-    const now = new Date();
-    const secondsAgo = Math.round((now - date) / 1000);
-
-    const timeUnits = [
-        { unit: "year", seconds: 31536000 },
-        { unit: "month", seconds: 2592000 },
-        { unit: "week", seconds: 604800 },
-        { unit: "day", seconds: 86400 },
-        { unit: "hour", seconds: 3600 },
-        { unit: "min", seconds: 60 },
-    ];
-
-    for (let {unit, seconds} of timeUnits) {
-        const count = Math.floor(secondsAgo / seconds);
-        if (count >= 1) {
-            return `${count} ${unit}${count > 1 ? 's' : ''} ago`;
-        }
-    }
-
-    return 'just now';
-}
-
 function toggleDropdown(event) {
     const userDropdown = document.getElementById('userDropdown');
     const isVisible = userDropdown.style.display === 'block';
@@ -622,3 +602,31 @@ onAuthStateChanged(auth, (user) => {
         authButton.style.display = 'block';
     }
 });
+
+// ------------------------
+//        Utilities
+// ------------------------
+
+function formatDate(timestamp) {
+    const date = timestamp.toDate();
+    const now = new Date();
+    const secondsAgo = Math.round((now - date) / 1000);
+
+    const timeUnits = [
+        { unit: "year", seconds: 31536000 },
+        { unit: "month", seconds: 2592000 },
+        { unit: "week", seconds: 604800 },
+        { unit: "day", seconds: 86400 },
+        { unit: "hour", seconds: 3600 },
+        { unit: "min", seconds: 60 },
+    ];
+
+    for (let {unit, seconds} of timeUnits) {
+        const count = Math.floor(secondsAgo / seconds);
+        if (count >= 1) {
+            return `${count} ${unit}${count > 1 ? 's' : ''} ago`;
+        }
+    }
+
+    return 'just now';
+}

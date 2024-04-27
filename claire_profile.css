@@ -16,6 +16,19 @@
 	80% { color:  fuchsia }
 }
 
+@keyframes transRainbowText{
+	from, to { color: rgb(0, 225, 255) }
+	10% { color: rgb(147, 216, 255) }
+	20% { color: rgb(221, 229, 255) }
+	30% { color: rgb(255, 255, 255) }
+	40% { color: rgb(255, 182, 245) }
+	50% { color: rgb(255, 132, 255) }
+  60% { color: rgb(255, 184, 246) }
+  70% { color: rgb(255, 255, 255) }
+	80% { color: rgb(221, 229, 255) }
+	90% { color: rgb(177, 223, 250) }
+}
+
 html, body {
   height: 100%;
   margin: 0;
@@ -24,10 +37,18 @@ html, body {
   font-family: "Trebuchet MS";
 }
 
-h1, h2{
+h1 {
   font-size: clamp(20px, 2.5vw, 40px);
   padding: 1%;
   background-color: #2c2f33;
+  border-radius: 8px;
+  animation: transRainbowText 10s infinite;
+}
+
+h2{
+  font-size: clamp(15px, 1.5vw, 30px);
+  padding: 1%;
+  background-color: #2c2f338a;
   border-radius: 8px;
   color: rgb(228, 199, 230);
 }
@@ -87,7 +108,7 @@ header {
 }
 
 .video {
-  animation: rainbow 3s infinite;
+  animation: rainbow 10s infinite;
 }
 
 .title {
@@ -99,7 +120,7 @@ header {
 
 .pronouns {
   margin-top: -4%;
-  color: rgb(241, 227, 242);
+  animation: transRainbowText 10s infinite;
   font-size: clamp(15px, 1.2vw, 27px);
   margin-bottom: 3%;
 }

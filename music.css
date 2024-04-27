@@ -158,7 +158,12 @@ label  {
     height: 110%; /* Full height of the grid cell */
 }
 
+
 .music-card:hover {
+    filter: grayscale(0.8);
+}
+
+.playing {
     filter: grayscale(0);
 }
 
