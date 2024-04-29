@@ -1,4 +1,4 @@
 # My insane portfolio (real)
-https://real-claire-github-io.vercel.app/
+https://real-claire.github.io/
 
 ### Hai :3
